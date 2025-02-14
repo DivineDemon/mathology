@@ -1,10 +1,10 @@
 declare type Course = {
   course_title: string;
   course_id: number;
-  user_id?: string;
-  created_at?: string;
-  updated_at?: string | null;
-  deleted_at?: string | null;
+  user_id: string;
+  created_at: string;
+  updated_at: string | null;
+  deleted_at: string | null;
 };
 
 declare type Lesson = {
@@ -48,12 +48,12 @@ declare type Question = {
 };
 
 declare type User = {
-  user_id: string;
+  user_id?: string;
   name: string;
   email: string;
   designation: string;
   account_type: string;
   profile_picture_url: string;
-  created_at: string;
-  updated_at: string | null;
+  created_at?: string;
+  updated_at?: string | null;
 };
