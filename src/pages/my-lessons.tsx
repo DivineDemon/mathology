@@ -62,7 +62,7 @@ const MyLessons = () => {
 
     let filteredLessons = [...data];
 
-    if (standardFilter) {
+    if (standardFilter && standardFilter !== "All") {
       filteredLessons = filteredLessons.filter(
         (lesson) => lesson.standard_title === standardFilter
       );
