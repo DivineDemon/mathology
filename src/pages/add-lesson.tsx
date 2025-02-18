@@ -36,9 +36,10 @@ import {
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
-import { extractPdfText } from "@/lib/utils";
+import { extractPdfText, parseImage } from "@/lib/utils";
 import { useGetAllCoursesQuery } from "@/store/services/course";
 import {
+  useGetAllLessonsQuery,
   useGetLessonQuery,
   usePostLessonMutation,
   useUpdateLessonMutation,
@@ -81,7 +82,7 @@ const AddLesson = () => {
   const [currentSkill, setCurrentSkill] = useState<string>("");
   const [postLesson, { isLoading: posting }] = usePostLessonMutation();
   const [updateLesson, { isLoading: updating }] = useUpdateLessonMutation();
-  const [lessonHeaderFileName, setLessonHeaderFileName] = useState<string>("");
+  const [lessonHeaderFileName, _] = useState<string>("");
   const [lessonFileName, setLessonFileName] = useState<string>("");
 
   const form = useForm<z.infer<typeof lessonFormSchema>>({
@@ -113,6 +114,14 @@ const AddLesson = () => {
     });
 
   const { data: courses, isLoading: courseLoading } = useGetAllCoursesQuery(
+    `${token}`,
+    {
+      skip: !token,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const { data: lessons, isLoading: lessaonsLoading } = useGetAllLessonsQuery(
     `${token}`,
     {
       skip: !token,
@@ -192,9 +201,8 @@ const AddLesson = () => {
 
       if (type === "lh") {
         if (file.type.startsWith("image/")) {
-          const imageUrl = URL.createObjectURL(file);
-          setLessonHeader(imageUrl);
-          setLessonHeaderFileName(file.name);
+          const imageUrl = await parseImage(file);
+          setLessonHeader(imageUrl as string);
         } else {
           toast.custom(() => (
             <CustomToast
@@ -204,7 +212,9 @@ const AddLesson = () => {
             />
           ));
         }
-      } else if (type === "l") {
+      }
+
+      if (type === "l") {
         if (file.type === "application/pdf") {
           const pdfText = await extractPdfText(file);
           setLesson(pdfText);
@@ -321,7 +331,7 @@ const AddLesson = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {!standardloading && !courseLoading ? (
+        {!standardloading && !courseLoading && !lessaonsLoading ? (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
@@ -389,7 +399,24 @@ const AddLesson = () => {
                 render={({ field }) => (
                   <FormItem className="col-span-2 w-full">
                     <FormLabel>Lesson</FormLabel>
-                    <Input placeholder="Lesson Name" {...field} />
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Lesson" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {/* @ts-ignore */}
+                        {lessons?.map((lesson: Lesson) => (
+                          <SelectItem
+                            key={lesson.lesson_id}
+                            value={lesson.lesson_title}
+                          >
+                            {lesson.lesson_title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
