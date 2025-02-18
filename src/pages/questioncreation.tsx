@@ -2,9 +2,9 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { CloudUpload, Loader2, X } from "lucide-react";
+import { CircleCheckBig, CloudUpload, Loader2, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -79,6 +79,7 @@ const questionFormSchema = z.object({
 
 const AddTopic = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { getToken } = useKindeAuth();
   const lRef = useRef<HTMLInputElement>(null);
   const [token, setToken] = useState<string>("");
@@ -86,6 +87,8 @@ const AddTopic = () => {
   const [currentSkill, setCurrentSkill] = useState<string>("");
   const [postQuestion, { isLoading: posting }] = usePostQuestionMutation();
   const [updateQuestion, { isLoading: updating }] = useUpdateQuestionMutation();
+
+  const [fileName, setFileName] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof questionFormSchema>>({
     resolver: zodResolver(questionFormSchema),
@@ -98,7 +101,7 @@ const AddTopic = () => {
       question_title: "",
       question_description: "",
       question_type: "Practice",
-      answer_type: "MCQs",
+      answer_type: "Short Answer",
       answer: "",
     },
   });
@@ -120,20 +123,27 @@ const AddTopic = () => {
     }
   );
 
-  const { data: standards } = useGetAllStandardsQuery(`${token}`, {
-    skip: !token,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: standards, isLoading: standardloading } =
+    useGetAllStandardsQuery(`${token}`, {
+      skip: !token,
+      refetchOnMountOrArgChange: true,
+    });
 
-  const { data: courses } = useGetAllCoursesQuery(`${token}`, {
-    skip: !token,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: courses, isLoading: courseLoading } = useGetAllCoursesQuery(
+    `${token}`,
+    {
+      skip: !token,
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
-  const { data: lessons } = useGetAllLessonsQuery(`${token}`, {
-    skip: !token,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: lessons, isLoading: lessaonsLoading } = useGetAllLessonsQuery(
+    `${token}`,
+    {
+      skip: !token,
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const handleToken = async () => {
     let token: string | undefined = "";
@@ -180,16 +190,19 @@ const AddTopic = () => {
     setCurrentSkill("");
   };
 
-  const toggleInput = () => {
-    if (lRef.current) {
-      lRef.current.click();
+  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFileName(file.name);
+
+      const pdfText = await extractPdfText(file);
+      setLesson(pdfText);
     }
   };
 
-  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const pdfText = await extractPdfText(e.target.files[0]);
-      setLesson(pdfText);
+  const toggleInput = () => {
+    if (lRef.current) {
+      lRef.current.click();
     }
   };
 
@@ -238,6 +251,7 @@ const AddTopic = () => {
           description={`Question ${id ? "updated" : "created"} successfully`}
         />
       ));
+      navigate("/questionbank");
     } catch (error) {
       toast.custom(() => (
         <CustomToast
@@ -275,7 +289,7 @@ const AddTopic = () => {
       );
       form.setValue(
         "answer_type",
-        data?.answer_type as "Short Answer" | "MCQs" | "Long Answer"
+        data?.answer_type as "Short Answer" | "Long Answer"
       );
       form.setValue("answer", data?.solution_file);
     }
@@ -310,290 +324,310 @@ const AddTopic = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="grid w-full grid-cols-4 gap-6"
-          >
-            <FormField
-              control={form.control}
-              name="standard"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Standard</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Standard" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {standards?.map((standard: Standard) => (
-                        <SelectItem
-                          key={standard.standard_id}
-                          value={standard.standard_title}
-                        >
-                          {standard.standard_title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="course"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Course</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Course" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {courses?.map((course) => (
-                        <SelectItem
-                          key={course.course_id}
-                          value={course.course_title}
-                        >
-                          {course.course_title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lesson"
-              render={({ field }) => (
-                <FormItem className="col-span-2 w-full">
-                  <FormLabel>Lesson</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Lesson" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {lessons?.map((lesson) => (
-                        <SelectItem
-                          key={lesson.lesson_id}
-                          value={lesson.lesson_title}
-                        >
-                          {lesson.lesson_title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="difficulty_level"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Difficulty Level</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Difficulty Level" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="skill_tags"
-              render={() => (
-                <FormItem className="col-span-3 w-full">
-                  <FormLabel>Skill Tags</FormLabel>
-                  <FormControl>
-                    <div className="flex w-full items-center justify-center gap-5">
-                      <Input
-                        placeholder="Geometry"
-                        value={currentSkill}
-                        onChange={(e) => setCurrentSkill(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button
-                        onClick={addSkills}
-                        type="button"
-                        variant="default"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {fields.length > 0 && (
-              <div className="col-span-4 grid grid-cols-4 gap-5">
-                <div className="col-span-1 w-full" />
-                <div className="col-span-3 flex w-full max-w-full items-center justify-start gap-2.5 overflow-x-auto">
-                  {form.watch("skill_tags").map((tag, index) => (
-                    <div
-                      key={index}
-                      onClick={() => remove(index)}
-                      className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-primary bg-primary/20 px-4 py-1 text-blue-700"
-                    >
-                      <span className="pb-0.5 text-[14px] capitalize">
-                        {tag.value}
-                      </span>
-                      <X className="size-3.5" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <FormField
-              control={form.control}
-              name="question_title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Question Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Question Title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="question_description"
-              render={({ field }) => (
-                <FormItem className="col-span-3 w-full">
-                  <FormLabel>Question Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Question Description" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="question_type"
-              render={({ field }) => (
-                <FormItem className="col-span-2 w-full">
-                  <FormLabel>Question Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Question Type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Practice">Practice</SelectItem>
-                      <SelectItem value="Actual">Actual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="answer_type"
-              render={({ field }) => (
-                <FormItem className="col-span-2 w-full">
-                  <FormLabel>Answer Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Answer Type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="MCQs">MCQs</SelectItem>
-                      <SelectItem value="Short Answer">Short Answer</SelectItem>
-                      <SelectItem value="Long Answer">Long Answer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="answer"
-              render={({ field }) => (
-                <FormItem className="col-span-4 w-full">
-                  <FormLabel>Answers</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={
-                        form.watch("answer_type") === "MCQs"
-                          ? "Please Enter Comma Separated Answers Here."
-                          : "Please Enter Your Answer Here."
-                      }
-                      className="flex-1"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="col-span-4 flex h-full w-full items-center justify-center gap-5 rounded-lg bg-white px-5 py-[110px] lg:gap-10 lg:p-[110px]">
-              <div
-                onClick={toggleInput}
-                className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10"
-              >
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={lRef}
-                  multiple={false}
-                  onChange={(e) => handleUpload(e)}
-                  accept="application/pdf"
-                />
-                <CloudUpload className="size-8" />
-                <div className="flex flex-col items-center justify-center">
-                  <span className="w-full text-left font-medium">
-                    Upload Solution
-                  </span>
-                  <span className="w-full text-left text-xs text-white/80">
-                    Supported formats: .pdf
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="col-span-4 flex w-full cursor-pointer items-end justify-end pb-5">
-              <Button
-                type="submit"
-                variant="default"
-                disabled={posting || updating}
-                className="w-fit text-white"
-              >
-                {posting || updating ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Submit"
+
+        {standardloading && courseLoading && lessaonsLoading ? (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="grid w-full grid-cols-4 gap-6"
+            >
+              <FormField
+                control={form.control}
+                name="standard"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Standard</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Standard" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {/* @ts-ignore */}
+                        {standards?.map((standard: Standard) => (
+                          <SelectItem
+                            key={standard.standard_id}
+                            value={standard.standard_title}
+                          >
+                            {standard.standard_title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              />
+              <FormField
+                control={form.control}
+                name="course"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Course</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Course" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {/* @ts-ignore */}
+                        {courses?.map((course: Course) => (
+                          <SelectItem
+                            key={course.course_id}
+                            value={course.course_title}
+                          >
+                            {course.course_title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lesson"
+                render={({ field }) => (
+                  <FormItem className="col-span-2 w-full">
+                    <FormLabel>Lesson</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Lesson" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {/* @ts-ignore */}
+                        {lessons?.map((lesson: Lesson) => (
+                          <SelectItem
+                            key={lesson.lesson_id}
+                            value={lesson.lesson_title}
+                          >
+                            {lesson.lesson_title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="difficulty_level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Difficulty Level</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Difficulty Level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="easy">Easy</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="hard">Hard</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="col-span-3 flex flex-col items-start justify-start gap-3">
+                <FormField
+                  control={form.control}
+                  name="skill_tags"
+                  render={() => (
+                    <FormItem className="col-span-3 w-full">
+                      <FormLabel>Skill Tags</FormLabel>
+                      <FormControl>
+                        <div className="flex w-full items-center justify-center gap-5">
+                          <Input
+                            placeholder="Geometry"
+                            value={currentSkill}
+                            onChange={(e) => setCurrentSkill(e.target.value)}
+                            className="flex-1"
+                          />
+                          <Button
+                            onClick={addSkills}
+                            type="button"
+                            variant="default"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {fields.length > 0 && (
+                  <div className="col-span-4 grid grid-cols-4 gap-5">
+                    <div className="col-span-3 flex w-full max-w-full items-center justify-start gap-2.5 overflow-x-auto">
+                      {form.watch("skill_tags").map((tag, index) => (
+                        <div
+                          key={index}
+                          onClick={() => remove(index)}
+                          className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-primary bg-primary/20 px-4 py-1 text-blue-700"
+                        >
+                          <span className="pb-0.5 text-[14px] capitalize">
+                            {tag.value}
+                          </span>
+                          <X className="size-3.5" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <FormField
+                control={form.control}
+                name="question_title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Question Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Question Title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="question_description"
+                render={({ field }) => (
+                  <FormItem className="col-span-3 w-full">
+                    <FormLabel>Question Description</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Question Description" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="question_type"
+                render={({ field }) => (
+                  <FormItem className="col-span-2 w-full">
+                    <FormLabel>Question Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Question Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Practice">Practice</SelectItem>
+                        <SelectItem value="Actual">Actual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="answer_type"
+                render={({ field }) => (
+                  <FormItem className="col-span-2 w-full">
+                    <FormLabel>Answer Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value || "Short Answer"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an answer type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Short Answer">
+                          Short Answer
+                        </SelectItem>
+                        <SelectItem value="Long Answer">Long Answer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="answer"
+                render={({ field }) => (
+                  <FormItem className="col-span-4 w-full">
+                    <FormLabel>Answers</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={"Please Enter Your Answer Here."}
+                        className="flex-1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="col-span-4 flex h-full w-full items-center justify-center gap-5 rounded-lg bg-white px-5 py-[110px] lg:gap-10 lg:p-[110px]">
+                <div
+                  onClick={toggleInput}
+                  className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10"
+                >
+                  <input
+                    type="file"
+                    className="hidden"
+                    ref={lRef}
+                    multiple={false}
+                    onChange={(e) => handleUpload(e)}
+                    accept="application/pdf"
+                  />
+                  {fileName ? (
+                    <span>
+                      <CircleCheckBig className="size-8" />
+                    </span>
+                  ) : (
+                    <span>
+                      <CloudUpload className="size-8" />
+                    </span>
+                  )}
+
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="w-full text-left font-medium">
+                      {fileName ? "File Uploaded" : "Upload Solution"}
+                    </span>
+                    <span className="w-full text-left text-xs text-white/80">
+                      {fileName ? fileName : "Supported formats: .pdf"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-4 flex w-full cursor-pointer items-end justify-end pb-5">
+                <Button
+                  type="submit"
+                  variant="default"
+                  disabled={posting || updating}
+                  className="w-fit text-white"
+                >
+                  {posting || updating ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    "Submit"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        ) : (
+          <span className="mx-auto flex h-full w-full items-center justify-center">
+            <Loader2 className="size-10 animate-spin text-primary" />
+          </span>
+        )}
       </div>
     </div>
   );

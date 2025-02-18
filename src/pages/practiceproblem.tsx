@@ -153,14 +153,6 @@ const QuestionBank = () => {
           <SidebarTrigger className="block lg:hidden" />
           <div className="text-3xl font-bold lg:text-4xl">Practice Problem</div>
         </div>
-        <Button
-          variant="default"
-          onClick={() => navigate("/questionbank/create-question")}
-          className="font-semibold text-white"
-        >
-          <Plus />
-          Create Question
-        </Button>
       </nav>
 
       {isLoading ? (

@@ -15,6 +15,7 @@ export const courseApi = api.injectEndpoints({
         total: number;
         page: number;
         size: number;
+        data: Course[];
         courses: Course[];
       }) => response.courses,
     }),
