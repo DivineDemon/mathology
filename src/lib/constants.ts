@@ -166,7 +166,7 @@ export const questiondata = [
     title: "How many feet are in a mile? 15",
     course: "Geometry",
     topic: "Real Numbers",
-    standard: "k2",
+    standard: "k1",
     difficultylevel: "Medium",
     tags: ["Math", "Numbers"],
     status: "Published",
@@ -186,7 +186,7 @@ export const questiondata = [
     title: "How many feet are in a mile? 17",
     course: "Calculus",
     topic: "Differentiation Basics",
-    standard: "k4",
+    standard: "k1",
     difficultylevel: "Easy",
     tags: ["Math", "Calculus"],
     status: "Draft",
@@ -342,3 +342,52 @@ export const questiondata = [
   //   status: "Published",
   // },
 ];
+
+//  _____   Question Bank Status Cell _______
+
+//     /* <TableHead>
+//                     <DropdownMenu>
+//                       <DropdownMenuTrigger asChild>
+//                         <Button type="button" variant="ghost">
+//                           Status <img src={Sort} className="size-4" />
+//                         </Button>
+//                       </DropdownMenuTrigger>
+//                       <DropdownMenuContent className="w-24">
+//                         <DropdownMenuItem
+//                           onClick={() => setSelectedStatus(null)}
+//                         >
+//                           All
+//                         </DropdownMenuItem>
+//                         {uniqueStatuses.map((status) => (
+//                           <DropdownMenuItem
+//                             key={status}
+//                             onClick={() => setSelectedStatus(status)}
+//                           >
+//                             {status}
+//                           </DropdownMenuItem>
+//                         ))}
+//                       </DropdownMenuContent>
+//                     </DropdownMenu>
+//                   </TableHead> */
+
+//     /* <TableCell>
+//                       <span
+//                         className={cn(
+//                           "flex items-center justify-center gap-1.5 rounded-md border p-1.5 font-medium",
+//                           {
+//                             "border-primary bg-blue-100 text-primary dark:bg-primary/60 dark:text-white":
+//                               question.status === "Published",
+//                             "border-yellow-500 bg-orange-100 text-yellow-800":
+//                               question.status !== "Published",
+//                           }
+//                         )}
+//                       >
+//                         <Squircle
+//                           className={cn("size-2 rounded-full", {
+//                             "bg-primary": question.status === "Published",
+//                             "bg-orange-400": question.status !== "Published",
+//                           })}
+//                         />
+//                         {question.status}
+//                       </span>
+//                     </TableCell> */

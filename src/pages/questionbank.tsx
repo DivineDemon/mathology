@@ -196,14 +196,16 @@ const QuestionBank = () => {
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
       ) : //@ts-ignore
-      data?.length > 0 ? (
+      !data?.length > 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
               <TableHeader className="truncate">
                 <TableRow>
                   <TableHead>Question Title</TableHead>
+
                   <TableHead>Course</TableHead>
+
                   <TableHead>Lesson</TableHead>
 
                   <TableHead>
@@ -267,31 +269,6 @@ const QuestionBank = () => {
 
                   <TableHead>Tags</TableHead>
 
-                  {/* <TableHead>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button type="button" variant="ghost">
-                          Status <img src={Sort} className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-24">
-                        <DropdownMenuItem
-                          onClick={() => setSelectedStatus(null)}
-                        >
-                          All
-                        </DropdownMenuItem>
-                        {uniqueStatuses.map((status) => (
-                          <DropdownMenuItem
-                            key={status}
-                            onClick={() => setSelectedStatus(status)}
-                          >
-                            {status}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableHead> */}
-
                   <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -309,24 +286,29 @@ const QuestionBank = () => {
                     <TableCell className="overflow-hidden truncate font-medium">
                       {question.question_title}
                     </TableCell>
+
                     <TableCell className="overflow-hidden truncate">
                       {question.course_title}
                     </TableCell>
+
                     <TableCell className="overflow-hidden truncate">
                       {question.lesson_title}
                     </TableCell>
+
                     <TableCell className="text-center">
                       {question.standard_title}
                     </TableCell>
+
                     <TableCell
                       className={cn("text-center font-semibold", {
-                        "text-red-500": question.difficulty_level === "active",
-                        "text-green-500":
-                          question.difficulty_level !== "active",
+                        "text-green-500": question.difficulty_level === "easy",
+                        "text-blue-500": question.difficulty_level === "medium",
+                        "text-red-500": question.difficulty_level === "hard",
                       })}
                     >
                       {question.difficulty_level}
                     </TableCell>
+
                     <TableCell
                       className={cn(
                         "flex w-full gap-1.5 overflow-hidden truncate p-2"
@@ -344,28 +326,8 @@ const QuestionBank = () => {
                         </span>
                       ))}
                     </TableCell>
-                    {/* <TableCell>
-                      <span
-                        className={cn(
-                          "flex items-center justify-center gap-1.5 rounded-md border p-1.5 font-medium",
-                          {
-                            "border-primary bg-blue-100 text-primary dark:bg-primary/60 dark:text-white":
-                              question.status === "Published",
-                            "border-yellow-500 bg-orange-100 text-yellow-800":
-                              question.status !== "Published",
-                          }
-                        )}
-                      >
-                        <Squircle
-                          className={cn("size-2 rounded-full", {
-                            "bg-primary": question.status === "Published",
-                            "bg-orange-400": question.status !== "Published",
-                          })}
-                        />
-                        {question.status}
-                      </span>
-                    </TableCell> */}
-                    <TableCell className="flex items-center justify-center">
+
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger className="focus:outline-none">
                           <EllipsisVertical className="h-5 w-5 cursor-pointer" />
