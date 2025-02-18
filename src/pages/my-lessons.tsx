@@ -5,6 +5,7 @@ import { Loader2, Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import LessonCard from "@/components/lesson-card";
+import NotFound from "@/components/not-found";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -138,9 +139,7 @@ const MyLessons = () => {
           ))
         ) : (
           <div className="col-span-1 flex h-full w-full items-center justify-center md:col-span-2 xl:col-span-4">
-            <span className="w-full text-center text-xl font-semibold text-gray-500">
-              No Results Found.
-            </span>
+            <NotFound />
           </div>
         )}
         <div

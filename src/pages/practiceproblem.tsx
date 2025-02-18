@@ -4,6 +4,7 @@ import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { ChevronLeft, ChevronRight, Loader2, Squircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import NotFound from "@/components/not-found";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -153,7 +154,8 @@ const QuestionBank = () => {
         <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
-      ) : (
+      ) : //@ts-ignore
+      data?.length > 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -340,6 +342,10 @@ const QuestionBank = () => {
               </button>
             </div>
           </div>
+        </div>
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <NotFound />
         </div>
       )}
     </div>

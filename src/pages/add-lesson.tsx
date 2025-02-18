@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Textarea } from "@/components/ui/textarea";
 import { extractPdfText } from "@/lib/utils";
 import { useGetAllCoursesQuery } from "@/store/services/course";
 import {
@@ -436,7 +437,7 @@ const AddLesson = () => {
                   <FormItem className="col-span-4 w-full">
                     <FormLabel>Lesson Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="Lesson Description" {...field} />
+                      <Textarea placeholder="Lesson Description" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

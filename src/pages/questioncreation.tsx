@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Textarea } from "@/components/ui/textarea";
 import { extractPdfText } from "@/lib/utils";
 import { useGetAllCoursesQuery } from "@/store/services/course";
 import { useGetAllLessonsQuery } from "@/store/services/lesson";
@@ -564,7 +565,7 @@ const AddTopic = () => {
                   <FormItem className="col-span-4 w-full">
                     <FormLabel>Answers</FormLabel>
                     <FormControl>
-                      <Input
+                      <Textarea
                         placeholder={"Please Enter Your Answer Here."}
                         className="flex-1"
                         {...field}

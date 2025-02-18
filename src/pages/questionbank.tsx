@@ -4,12 +4,14 @@ import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import {
   ChevronLeft,
   ChevronRight,
+  EllipsisVertical,
   Loader2,
   Plus,
   Squircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
+import NotFound from "@/components/not-found";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,6 +32,7 @@ import { questiondata } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useGetAllQuestionsQuery } from "@/store/services/question";
 
+import Delete from "../assets/img/delete.svg";
 import Edit from "../assets/img/edit-2.svg";
 import Sort from "../assets/img/sort.svg";
 
@@ -160,7 +163,8 @@ const QuestionBank = () => {
         <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
-      ) : (
+      ) : //@ts-ignore
+      data?.length > 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -322,13 +326,26 @@ const QuestionBank = () => {
                       </span>
                     </TableCell>
                     <TableCell className="flex items-center justify-center">
-                      <Link
-                        to={`/dashboard/editquestion/${question.question_id}`}
-                        className="flex items-center"
-                      >
-                        <img src={Edit} alt="Edit" className="mr-2" />
-                        &nbsp; Edit
-                      </Link>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="focus:outline-none">
+                          <EllipsisVertical className="h-5 w-5 cursor-pointer" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to={`/dashboard/editquestion/${question.question_id}`}
+                              className="flex items-center"
+                            >
+                              <img src={Edit} alt="Edit" className="mr-2" />
+                              &nbsp; Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600">
+                            <img src={Delete} alt="delete" className="mr-2" />
+                            &nbsp; Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -364,6 +381,10 @@ const QuestionBank = () => {
               </button>
             </div>
           </div>
+        </div>
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <NotFound />
         </div>
       )}
     </div>
