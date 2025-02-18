@@ -113,7 +113,7 @@ const AddTopic = () => {
     name: "skill_tags",
   });
 
-  const { data } = useGetQuestionQuery(
+  const { data, isLoading: questionLoading } = useGetQuestionQuery(
     {
       id: Number(id),
       token: `${token}`,
@@ -326,7 +326,10 @@ const AddTopic = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {!standardloading && !courseLoading && !lessaonsLoading ? (
+        {!standardloading &&
+        !courseLoading &&
+        !lessaonsLoading &&
+        !questionLoading ? (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
