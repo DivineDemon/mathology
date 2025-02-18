@@ -17,9 +17,9 @@ const App = () => {
       <Route index element={<Login />} />
       <Route
         element={
-          // <RouteGuard>
-          <GlobalLayout />
-          // </RouteGuard>
+          <RouteGuard>
+            <GlobalLayout />
+          </RouteGuard>
         }
       >
         <Route path="/dashboard" element={<MyLessons />} />

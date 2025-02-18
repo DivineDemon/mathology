@@ -42,7 +42,7 @@ import Sort from "../assets/img/sort.svg";
 
 const ITEMS_PER_PAGE = 10;
 
-const QuestionBank = ({ question }: { question: any }) => {
+const QuestionBank = () => {
   const navigate = useNavigate();
   const { getToken } = useKindeAuth();
   const [token, setToken] = useState<string>("");
@@ -61,9 +61,9 @@ const QuestionBank = ({ question }: { question: any }) => {
   const [deleteQuestion, { isLoading: deletingloading }] =
     useDeleteQuestionMutation();
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: number) => {
     const response = await deleteQuestion({
-      id: question.question_id,
+      id,
       token,
     });
 
@@ -196,7 +196,7 @@ const QuestionBank = ({ question }: { question: any }) => {
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
       ) : //@ts-ignore
-      !data?.length > 0 ? (
+      data?.length > 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -382,7 +382,7 @@ const QuestionBank = ({ question }: { question: any }) => {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600"
-                            onClick={handleDelete}
+                            onClick={() => handleDelete(question.question_id)}
                           >
                             {deletingloading ? (
                               <Loader2 className="animate-spin" />
