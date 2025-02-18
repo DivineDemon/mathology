@@ -397,24 +397,7 @@ const AddTopic = () => {
                 render={({ field }) => (
                   <FormItem className="col-span-2 w-full">
                     <FormLabel>Lesson</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Lesson" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {/* @ts-ignore */}
-                        {lessons?.map((lesson: Lesson) => (
-                          <SelectItem
-                            key={lesson.lesson_id}
-                            value={lesson.lesson_title}
-                          >
-                            {lesson.lesson_title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input placeholder="Lesson Name" {...field} />
                     <FormMessage />
                   </FormItem>
                 )}

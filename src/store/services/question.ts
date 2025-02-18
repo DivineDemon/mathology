@@ -89,6 +89,16 @@ export const questionApi = api.injectEndpoints({
       }),
       invalidatesTags: ["question", "questions"],
     }),
+    deleteQuestion: build.mutation({
+      query: ({ id, token }: { id: number; token: string }) => ({
+        url: `/questions/${id}`,
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+      invalidatesTags: ["questions"],
+    }),
   }),
 });
 
@@ -97,4 +107,5 @@ export const {
   usePostQuestionMutation,
   useGetAllQuestionsQuery,
   useUpdateQuestionMutation,
+  useDeleteQuestionMutation,
 } = questionApi;

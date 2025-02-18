@@ -7,12 +7,13 @@ import {
   EllipsisVertical,
   Loader2,
   Plus,
-  Squircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import NotFound from "@/components/not-found";
 import { Button } from "@/components/ui/button";
+import CustomToast from "@/components/ui/custom-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,10 @@ import {
 } from "@/components/ui/table";
 import { questiondata } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { useGetAllQuestionsQuery } from "@/store/services/question";
+import {
+  useDeleteQuestionMutation,
+  useGetAllQuestionsQuery,
+} from "@/store/services/question";
 
 import Delete from "../assets/img/delete.svg";
 import Edit from "../assets/img/edit-2.svg";
@@ -38,12 +42,12 @@ import Sort from "../assets/img/sort.svg";
 
 const ITEMS_PER_PAGE = 10;
 
-const QuestionBank = () => {
+const QuestionBank = ({ question }: { question: any }) => {
   const navigate = useNavigate();
   const { getToken } = useKindeAuth();
   const [token, setToken] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  // const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
     null
   );
@@ -54,18 +58,46 @@ const QuestionBank = () => {
     refetchOnMountOrArgChange: true,
   });
 
+  const [deleteQuestion, { isLoading: deletingloading }] =
+    useDeleteQuestionMutation();
+
+  const handleDelete = async () => {
+    const response = await deleteQuestion({
+      id: question.question_id,
+      token,
+    });
+
+    if (response.data) {
+      toast.custom(() => (
+        <CustomToast
+          type="success"
+          title="Success"
+          description="Lesson deleted successfully!"
+        />
+      ));
+    } else {
+      toast.custom(() => (
+        <CustomToast
+          type="error"
+          title="Error"
+          description="Something went wrong!"
+        />
+      ));
+    }
+  };
+
   const uniqueStandards = [...new Set(questiondata.map((q) => q.standard))];
   const uniqueDifficulties = [
     ...new Set(questiondata.map((q) => q.difficultylevel)),
   ];
 
-  const uniqueStatuses = [...new Set(questiondata.map((q) => q.status))];
+  // const uniqueStatuses = [...new Set(questiondata.map((q) => q.status))];
 
   const filteredData = data?.filter((q) => {
     return (
       (!selectedStandard || q.standard_title === selectedStandard) &&
-      (!selectedDifficulty || q.difficulty_level === selectedDifficulty) &&
-      (!selectedStatus || q.status === selectedStatus)
+      (!selectedDifficulty || q.difficulty_level === selectedDifficulty)
+      // && (!selectedStatus || q.status === selectedStatus)
     );
   });
 
@@ -164,7 +196,7 @@ const QuestionBank = () => {
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
       ) : //@ts-ignore
-      data?.length > 0 ? (
+      !data?.length > 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -177,7 +209,11 @@ const QuestionBank = () => {
                   <TableHead>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
+                        <Button
+                          type="button"
+                          className="w-full"
+                          variant="ghost"
+                        >
                           Standard <img src={Sort} className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -202,7 +238,11 @@ const QuestionBank = () => {
                   <TableHead>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
+                        <Button
+                          className="w-full"
+                          type="button"
+                          variant="ghost"
+                        >
                           Difficulty Level&nbsp;
                           <img src={Sort} className="size-4" />
                         </Button>
@@ -227,10 +267,10 @@ const QuestionBank = () => {
 
                   <TableHead>Tags</TableHead>
 
-                  <TableHead>
+                  {/* <TableHead>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
+                        <Button type="button" variant="ghost">
                           Status <img src={Sort} className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -250,7 +290,7 @@ const QuestionBank = () => {
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </TableHead>
+                  </TableHead> */}
 
                   <TableHead>Action</TableHead>
                 </TableRow>
@@ -304,7 +344,7 @@ const QuestionBank = () => {
                         </span>
                       ))}
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <span
                         className={cn(
                           "flex items-center justify-center gap-1.5 rounded-md border p-1.5 font-medium",
@@ -324,7 +364,7 @@ const QuestionBank = () => {
                         />
                         {question.status}
                       </span>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="flex items-center justify-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger className="focus:outline-none">
@@ -340,9 +380,22 @@ const QuestionBank = () => {
                               &nbsp; Edit
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <img src={Delete} alt="delete" className="mr-2" />
-                            &nbsp; Delete
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={handleDelete}
+                          >
+                            {deletingloading ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              <>
+                                <img
+                                  src={Delete}
+                                  alt="delete"
+                                  className="mr-2"
+                                />{" "}
+                                <span className="text-red-600">Delete</span>
+                              </>
+                            )}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

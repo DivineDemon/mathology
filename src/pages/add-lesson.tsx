@@ -48,7 +48,10 @@ import { useGetAllStandardsQuery } from "@/store/services/standard";
 const lessonFormSchema = z.object({
   standard: z.string().min(1, "Standard is required"),
   course: z.string().min(1, "Course is required"),
-  lesson: z.string().min(1, "Lesson is required"),
+  lesson: z
+    .string()
+    .min(1, "Lesson is required")
+    .regex(/^[A-Za-z0-9\s]+$/, "Lesson can only contain letters and numbers"),
   skill_tags: z
     .array(
       z.object({
@@ -57,7 +60,13 @@ const lessonFormSchema = z.object({
       })
     )
     .min(1, { message: "At least one skill tag is required" }),
-  lesson_description: z.string().min(1, "Lesson description is required"),
+  lesson_description: z
+    .string()
+    .min(1, "Lesson description is required")
+    .regex(
+      /^[A-Za-z0-9\s]+$/,
+      "Lesson description can only contain letters and numbers"
+    ),
 });
 
 const AddLesson = () => {

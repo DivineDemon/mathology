@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { ChevronLeft, ChevronRight, Loader2, Squircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import NotFound from "@/components/not-found";
@@ -37,7 +37,7 @@ const QuestionBank = () => {
   const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  // const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
     null
   );
@@ -54,7 +54,7 @@ const QuestionBank = () => {
   const uniqueStandards = [...new Set(data?.map((q) => q.standard_title))];
   const uniqueDifficulties = [...new Set(data?.map((q) => q.difficulty_level))];
   const uniqueTags = [...new Set(data?.flatMap((q) => q.skill_tags))];
-  const uniqueStatuses = [...new Set(data?.map((q) => q.status))];
+  // const uniqueStatuses = [...new Set(data?.map((q) => q.status))];
 
   const filteredData = data?.filter((q) => {
     return (
@@ -63,8 +63,8 @@ const QuestionBank = () => {
       (!selectedTopic || q.lesson_title === selectedTopic) &&
       (!selectedStandard || q.standard_title === selectedStandard) &&
       (!selectedDifficulty || q.difficulty_level === selectedDifficulty) &&
-      (!selectedTag || q.skill_tags.includes(selectedTag)) &&
-      (!selectedStatus || q.status === selectedStatus)
+      (!selectedTag || q.skill_tags.includes(selectedTag))
+      // && (!selectedStatus || q.status === selectedStatus)
     );
   });
 
@@ -155,7 +155,7 @@ const QuestionBank = () => {
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
       ) : //@ts-ignore
-      data?.length > 0 ? (
+      !data?.length > 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -192,11 +192,11 @@ const QuestionBank = () => {
                       options: uniqueTags,
                       setter: setSelectedTag,
                     },
-                    {
-                      label: "Status",
-                      options: uniqueStatuses,
-                      setter: setSelectedStatus,
-                    },
+                    // {
+                    //   label: "Status",
+                    //   options: uniqueStatuses,
+                    //   setter: setSelectedStatus,
+                    // },
                   ].map(({ label, options, setter }) => (
                     <TableHead key={label}>
                       <DropdownMenu>
@@ -261,11 +261,11 @@ const QuestionBank = () => {
                           "overflow-hidden truncate pl-6 text-center font-semibold",
                           {
                             "text-red-500":
-                              question.difficulty_level === "Advanced",
+                              question.difficulty_level === "Easy",
                             "text-green-500":
-                              question.difficulty_level === "Beginner",
+                              question.difficulty_level === "Medium",
                             "text-yellow-500":
-                              question.difficulty_level === "Intermediate",
+                              question.difficulty_level === "Hard",
                             "text-gray-500": !question.difficulty_level,
                           }
                         )}
@@ -287,7 +287,7 @@ const QuestionBank = () => {
                             </span>
                           ))}
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <span
                           className={cn(
                             "flex items-center justify-center gap-1.5 rounded-md border p-1.5 font-medium",
@@ -307,7 +307,7 @@ const QuestionBank = () => {
                           />
                           {question.status}
                         </span>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
               </TableBody>

@@ -68,7 +68,8 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                     <Loader2 className="animate-spin" />
                   ) : (
                     <>
-                      <img src={Delete} alt="delete" className="mr-2" /> Delete
+                      <img src={Delete} alt="delete" className="mr-2" />{" "}
+                      <span className="text-red-600">Delete</span>
                     </>
                   )}
                 </DropdownMenuItem>
