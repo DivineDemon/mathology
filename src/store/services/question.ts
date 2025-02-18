@@ -4,7 +4,7 @@ export const questionApi = api.injectEndpoints({
   endpoints: (build) => ({
     getAllQuestions: build.query({
       query: (token: string) => ({
-        url: "/questions/",
+        url: "/questions/creator",
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

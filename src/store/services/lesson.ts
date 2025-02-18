@@ -4,7 +4,7 @@ export const lessonApi = api.injectEndpoints({
   endpoints: (build) => ({
     getAllLessons: build.query({
       query: (token: string) => ({
-        url: "/lessons/",
+        url: "/lessons/creator",
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
