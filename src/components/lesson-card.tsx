@@ -78,7 +78,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
           <img
             src={lesson.lesson_header}
             alt="geometry"
-            className="w-full rounded-2xl"
+            className="aspect-square w-full rounded-2xl object-cover"
           />
           <div className="flex w-full items-center justify-between">
             <span className="text-sm font-semibold text-primary dark:text-gray-300">
