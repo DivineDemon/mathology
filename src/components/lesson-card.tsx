@@ -51,7 +51,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
           <div className="absolute right-5 top-6 z-[1]">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <EllipsisVertical className="text-black" />
+                <EllipsisVertical className="text-primary" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="mr-20 w-24">
                 <DropdownMenuItem className="border-b">
