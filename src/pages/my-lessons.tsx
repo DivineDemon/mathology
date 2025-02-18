@@ -121,6 +121,7 @@ const MyLessons = () => {
               <SelectValue placeholder="Standard" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">All</SelectItem>
               <SelectItem value="K1">K1</SelectItem>
               <SelectItem value="K2">K2</SelectItem>
               <SelectItem value="K3">K3</SelectItem>
