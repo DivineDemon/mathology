@@ -8,7 +8,6 @@ import { useDeleteLessonMutation } from "@/store/services/lesson";
 
 import Delete from "../assets/img/delete.svg";
 import Edit from "../assets/img/edit-2.svg";
-import Img from "../assets/img/pexels-olia-danilevich-5088017.jpg";
 import CustomToast from "./ui/custom-toast";
 import {
   DropdownMenu,
@@ -76,7 +75,11 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <img src={Img} alt="geometry" className="w-full rounded-2xl" />
+          <img
+            src={lesson.lesson_header}
+            alt="geometry"
+            className="w-full rounded-2xl"
+          />
           <div className="flex w-full items-center justify-between">
             <span className="text-sm font-semibold text-primary dark:text-gray-300">
               {lesson.course_title}
