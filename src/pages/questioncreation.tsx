@@ -325,7 +325,7 @@ const AddTopic = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {standardloading && courseLoading && lessaonsLoading ? (
+        {!standardloading && !courseLoading && !lessaonsLoading ? (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}

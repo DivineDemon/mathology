@@ -311,7 +311,7 @@ const AddLesson = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {standardloading && courseLoading ? (
+        {!standardloading && !courseLoading ? (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
