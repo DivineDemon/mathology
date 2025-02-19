@@ -29,12 +29,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { questiondata } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
   useDeleteQuestionMutation,
   useGetAllQuestionsQuery,
 } from "@/store/services/question";
+import { useGetAllStandardsQuery } from "@/store/services/standard";
 
 import Delete from "../assets/img/delete.svg";
 import Edit from "../assets/img/edit-2.svg";
@@ -54,6 +54,11 @@ const QuestionBank = () => {
   const [selectedStandard, setSelectedStandard] = useState<string | null>(null);
 
   const { data, isLoading } = useGetAllQuestionsQuery(`${token}`, {
+    skip: !token,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const { data: standards } = useGetAllStandardsQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
@@ -85,11 +90,6 @@ const QuestionBank = () => {
       ));
     }
   };
-
-  const uniqueStandards = [...new Set(questiondata.map((q) => q.standard))];
-  const uniqueDifficulties = [
-    ...new Set(questiondata.map((q) => q.difficultylevel)),
-  ];
 
   // const uniqueStatuses = [...new Set(questiondata.map((q) => q.status))];
 
@@ -225,12 +225,14 @@ const QuestionBank = () => {
                         >
                           All
                         </DropdownMenuItem>
-                        {uniqueStandards.map((standard) => (
+                        {standards?.map((standard) => (
                           <DropdownMenuItem
-                            key={standard}
-                            onClick={() => setSelectedStandard(standard)}
+                            key={standard.standard_id}
+                            onClick={() =>
+                              setSelectedStandard(standard.standard_title)
+                            }
                           >
-                            {standard}
+                            {standard.standard_title}
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>
@@ -255,14 +257,21 @@ const QuestionBank = () => {
                         >
                           All
                         </DropdownMenuItem>
-                        {uniqueDifficulties.map((difficulty) => (
-                          <DropdownMenuItem
-                            key={difficulty}
-                            onClick={() => setSelectedDifficulty(difficulty)}
-                          >
-                            {difficulty}
-                          </DropdownMenuItem>
-                        ))}
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty("easy")}
+                        >
+                          Easy
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty("medium")}
+                        >
+                          Medium
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty("hard")}
+                        >
+                          Hard
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableHead>
@@ -318,7 +327,7 @@ const QuestionBank = () => {
                         <span
                           key={tagIndex}
                           className={cn(
-                            "w-full rounded-md bg-white p-2 text-center font-medium lg:w-1/2",
+                            "w-fit shrink-0 rounded-md bg-white p-2 text-center font-medium",
                             { "bg-muted": index % 2 === 0 }
                           )}
                         >

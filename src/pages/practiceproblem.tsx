@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {
+  ChevronLeft,
+  ChevronRight,
+  EllipsisVertical,
+  Loader2,
+  Plus,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import NotFound from "@/components/not-found";
 import { Button } from "@/components/ui/button";
+import CustomToast from "@/components/ui/custom-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,21 +30,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useGetAllQuestionsQuery } from "@/store/services/question";
+import {
+  useDeleteQuestionMutation,
+  useGetAllQuestionsQuery,
+} from "@/store/services/question";
+import { useGetAllStandardsQuery } from "@/store/services/standard";
 
+import Delete from "../assets/img/delete.svg";
+import Edit from "../assets/img/edit-2.svg";
 import Sort from "../assets/img/sort.svg";
 
 const ITEMS_PER_PAGE = 10;
 
-const QuestionBank = () => {
+const PracticeProblem = () => {
   const navigate = useNavigate();
   const { getToken } = useKindeAuth();
   const [token, setToken] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   // const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
     null
@@ -48,28 +58,52 @@ const QuestionBank = () => {
     refetchOnMountOrArgChange: true,
   });
 
-  const uniqueTitles = [...new Set(data?.map((q) => q.question_title))];
-  const uniqueCourses = [...new Set(data?.map((q) => q.course_title))];
-  const uniqueLessons = [...new Set(data?.map((q) => q.lesson_title))];
-  const uniqueStandards = [...new Set(data?.map((q) => q.standard_title))];
-  const uniqueDifficulties = [...new Set(data?.map((q) => q.difficulty_level))];
-  const uniqueTags = [...new Set(data?.flatMap((q) => q.skill_tags))];
-  // const uniqueStatuses = [...new Set(data?.map((q) => q.status))];
+  const { data: standards } = useGetAllStandardsQuery(`${token}`, {
+    skip: !token,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const [deleteQuestion, { isLoading: deletingloading }] =
+    useDeleteQuestionMutation();
+
+  const handleDelete = async (id: number) => {
+    const response = await deleteQuestion({
+      id,
+      token,
+    });
+
+    if (response.data) {
+      toast.custom(() => (
+        <CustomToast
+          type="success"
+          title="Success"
+          description="Lesson deleted successfully!"
+        />
+      ));
+    } else {
+      toast.custom(() => (
+        <CustomToast
+          type="error"
+          title="Error"
+          description="Something went wrong!"
+        />
+      ));
+    }
+  };
+
+  // const uniqueStatuses = [...new Set(questiondata.map((q) => q.status))];
 
   const filteredData = data?.filter((q) => {
     return (
-      (!selectedTitle || q.question_title === selectedTitle) &&
-      (!selectedCourse || q.course_title === selectedCourse) &&
-      (!selectedTopic || q.lesson_title === selectedTopic) &&
       (!selectedStandard || q.standard_title === selectedStandard) &&
-      (!selectedDifficulty || q.difficulty_level === selectedDifficulty) &&
-      (!selectedTag || q.skill_tags.includes(selectedTag))
+      (!selectedDifficulty || q.difficulty_level === selectedDifficulty)
       // && (!selectedStatus || q.status === selectedStatus)
     );
   });
 
   const totalItems = filteredData?.length;
   const totalPages = Math.ceil(totalItems! / ITEMS_PER_PAGE);
+
   const currentData = filteredData?.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -149,7 +183,6 @@ const QuestionBank = () => {
           <div className="text-3xl font-bold lg:text-4xl">Practice Problem</div>
         </div>
       </nav>
-
       {isLoading ? (
         <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="size-10 animate-spin text-primary" />
@@ -161,75 +194,87 @@ const QuestionBank = () => {
             <Table>
               <TableHeader className="truncate">
                 <TableRow>
-                  {[
-                    {
-                      label: "Question Title",
-                      options: uniqueTitles,
-                      setter: setSelectedTitle,
-                    },
-                    {
-                      label: "Course",
-                      options: uniqueCourses,
-                      setter: setSelectedCourse,
-                    },
-                    {
-                      label: "Lesson",
-                      options: uniqueLessons,
-                      setter: setSelectedTopic,
-                    },
-                    {
-                      label: "Standard",
-                      options: uniqueStandards,
-                      setter: setSelectedStandard,
-                    },
-                    {
-                      label: "Difficulty Level",
-                      options: uniqueDifficulties,
-                      setter: setSelectedDifficulty,
-                    },
-                    {
-                      label: "Tags",
-                      options: uniqueTags,
-                      setter: setSelectedTag,
-                    },
-                    // {
-                    //   label: "Status",
-                    //   options: uniqueStatuses,
-                    //   setter: setSelectedStatus,
-                    // },
-                  ].map(({ label, options, setter }) => (
-                    <TableHead key={label}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost">
-                            {label} <img src={Sort} className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="max-h-64 w-full min-w-24 overflow-y-auto">
-                          <DropdownMenuItem onClick={() => setter(null)}>
-                            All
+                  <TableHead>Question Title</TableHead>
+
+                  <TableHead>Course</TableHead>
+
+                  <TableHead>Lesson</TableHead>
+
+                  <TableHead>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          className="w-full"
+                          variant="ghost"
+                        >
+                          Standard <img src={Sort} className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-24">
+                        <DropdownMenuItem
+                          onClick={() => setSelectedStandard(null)}
+                        >
+                          All
+                        </DropdownMenuItem>
+                        {standards?.map((standard) => (
+                          <DropdownMenuItem
+                            key={standard.standard_id}
+                            onClick={() =>
+                              setSelectedStandard(standard.standard_title)
+                            }
+                          >
+                            {standard.standard_title}
                           </DropdownMenuItem>
-                          {options.map((option) => (
-                            <DropdownMenuItem
-                              key={option}
-                              onClick={() => setter(option)}
-                            >
-                              {option}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableHead>
-                  ))}
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableHead>
+
+                  <TableHead>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          className="w-full"
+                          type="button"
+                          variant="ghost"
+                        >
+                          Difficulty Level&nbsp;
+                          <img src={Sort} className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty(null)}
+                        >
+                          All
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty("easy")}
+                        >
+                          Easy
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty("medium")}
+                        >
+                          Medium
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedDifficulty("hard")}
+                        >
+                          Hard
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableHead>
+
+                  <TableHead>Tags</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody className={cn("text-md", "truncate text-ellipsis")}>
                 {currentData
-                  ?.filter(
-                    (question: Question) =>
-                      question.question_type === "Practice"
-                  )
+                  ?.filter((q) => q.question_type === "Practice")
                   .map((question, index) => (
                     <TableRow
                       key={index}
@@ -240,46 +285,50 @@ const QuestionBank = () => {
                       }
                     >
                       <TableCell
-                        className="cursor-pointer overflow-hidden truncate pl-6 font-medium hover:underline"
+                        className="overflow-hidden truncate font-medium hover:cursor-pointer hover:underline"
                         onClick={() =>
                           navigate(`/practiceproblems/${question.question_id}`)
                         }
                       >
                         {question.question_title}
                       </TableCell>
-                      <TableCell className="overflow-hidden truncate pl-6">
+
+                      <TableCell className="overflow-hidden truncate">
                         {question.course_title}
                       </TableCell>
-                      <TableCell className="overflow-hidden truncate pl-6">
+
+                      <TableCell className="overflow-hidden truncate">
                         {question.lesson_title}
                       </TableCell>
-                      <TableCell className="overflow-hidden truncate pl-6 text-center">
+
+                      <TableCell className="text-center">
                         {question.standard_title}
                       </TableCell>
+
                       <TableCell
-                        className={cn(
-                          "overflow-hidden truncate pl-6 text-center font-semibold",
-                          {
-                            "text-red-500":
-                              question.difficulty_level === "Easy",
-                            "text-green-500":
-                              question.difficulty_level === "Medium",
-                            "text-yellow-500":
-                              question.difficulty_level === "Hard",
-                            "text-gray-500": !question.difficulty_level,
-                          }
-                        )}
+                        className={cn("text-center font-semibold", {
+                          "text-green-500":
+                            question.difficulty_level === "easy",
+                          "text-blue-500":
+                            question.difficulty_level === "medium",
+                          "text-red-500": question.difficulty_level === "hard",
+                        })}
                       >
                         {question.difficulty_level}
                       </TableCell>
-                      <TableCell className="flex gap-1.5 overflow-hidden truncate p-2 pl-6">
+
+                      <TableCell
+                        className={cn(
+                          "flex w-full gap-1.5 overflow-hidden truncate p-2"
+                        )}
+                      >
                         {question.skill_tags
                           .slice(0, 2)
                           .map((tag, tagIndex) => (
                             <span
                               key={tagIndex}
                               className={cn(
-                                "w-1/2 rounded-md bg-white p-2 text-center font-medium",
+                                "w-fit shrink-0 rounded-md bg-white p-2 text-center font-medium",
                                 { "bg-muted": index % 2 === 0 }
                               )}
                             >
@@ -287,27 +336,6 @@ const QuestionBank = () => {
                             </span>
                           ))}
                       </TableCell>
-                      {/* <TableCell>
-                        <span
-                          className={cn(
-                            "flex items-center justify-center gap-1.5 rounded-md border p-1.5 font-medium",
-                            {
-                              "border-primary bg-blue-100 text-primary dark:bg-primary/60 dark:text-white":
-                                question.status === "Published",
-                              "border-yellow-500 bg-orange-100 text-yellow-800":
-                                question.status !== "Published",
-                            }
-                          )}
-                        >
-                          <Squircle
-                            className={cn("size-2 rounded-full", {
-                              "bg-primary": question.status === "Published",
-                              "bg-orange-400": question.status !== "Published",
-                            })}
-                          />
-                          {question.status}
-                        </span>
-                      </TableCell> */}
                     </TableRow>
                   ))}
               </TableBody>
@@ -352,4 +380,4 @@ const QuestionBank = () => {
   );
 };
 
-export default QuestionBank;
+export default PracticeProblem;

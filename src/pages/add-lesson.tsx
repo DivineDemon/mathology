@@ -82,7 +82,6 @@ const AddLesson = () => {
   const [currentSkill, setCurrentSkill] = useState<string>("");
   const [postLesson, { isLoading: posting }] = usePostLessonMutation();
   const [updateLesson, { isLoading: updating }] = useUpdateLessonMutation();
-  const [lessonHeaderFileName, _] = useState<string>("");
   const [lessonFileName, setLessonFileName] = useState<string>("");
 
   const form = useForm<z.infer<typeof lessonFormSchema>>({
@@ -492,7 +491,7 @@ const AddLesson = () => {
                     onChange={(e) => handleUpload(e, "lh")}
                     accept="image/png, image/jpg, image/jpeg"
                   />
-                  {lessonHeaderFileName ? (
+                  {lessonHeader ? (
                     <span>
                       <CircleCheckBig className="size-8 text-primary" />
                     </span>
@@ -504,13 +503,11 @@ const AddLesson = () => {
 
                   <div className="flex flex-col items-center justify-center">
                     <span className="w-full text-left font-medium">
-                      {lessonHeaderFileName
-                        ? "File Uploaded"
-                        : "Upload Lesson Header"}
+                      {lessonHeader ? "File Uploaded" : "Upload Lesson Header"}
                     </span>
                     <span className="w-full text-left text-xs text-gray-400">
-                      {lessonHeaderFileName
-                        ? lessonHeaderFileName
+                      {lessonHeader
+                        ? lessonHeader
                         : "Supported formats: .png, .jpg, .jpeg"}
                     </span>
                   </div>
