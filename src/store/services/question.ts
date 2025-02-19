@@ -49,7 +49,7 @@ export const questionApi = api.injectEndpoints({
     }),
     getQuestion: build.query({
       query: ({ id, token }: { id: number; token: string }) => ({
-        url: `/questions/${id}`,
+        url: `/questions/id/?question_id=${id}`,
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

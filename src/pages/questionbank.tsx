@@ -77,7 +77,7 @@ const QuestionBank = () => {
         <CustomToast
           type="success"
           title="Success"
-          description="Lesson deleted successfully!"
+          description="Question deleted successfully!"
         />
       ));
     } else {

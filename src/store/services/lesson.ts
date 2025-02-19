@@ -5,7 +5,7 @@ export const lessonApi = api.injectEndpoints({
     getAllLessons: build.query({
       query: (token: string) => ({
         // url: "/lessons/creator/",
-        url: "/lessons/",
+        url: "/lessons/creator/",
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ export const lessonApi = api.injectEndpoints({
     }),
     deleteLesson: build.mutation({
       query: ({ token, id }: { token: string; id: number }) => ({
-        url: `/lessons/${id}`,
+        url: `/lessons?lesson_id=${id}`,
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -81,7 +81,7 @@ export const lessonApi = api.injectEndpoints({
     }),
     getLesson: build.query({
       query: ({ token, id }: { token: string; id: number }) => ({
-        url: `/lessons/${id}`,
+        url: `/lessons/creator/${id}`,
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -39,7 +39,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { extractPdfText, parseImage } from "@/lib/utils";
 import { useGetAllCoursesQuery } from "@/store/services/course";
 import {
-  useGetAllLessonsQuery,
   useGetLessonQuery,
   usePostLessonMutation,
   useUpdateLessonMutation,
@@ -113,14 +112,6 @@ const AddLesson = () => {
     });
 
   const { data: courses, isLoading: courseLoading } = useGetAllCoursesQuery(
-    `${token}`,
-    {
-      skip: !token,
-      refetchOnMountOrArgChange: true,
-    }
-  );
-
-  const { data: lessons, isLoading: lessaonsLoading } = useGetAllLessonsQuery(
     `${token}`,
     {
       skip: !token,
@@ -267,7 +258,7 @@ const AddLesson = () => {
         <CustomToast
           title="Success"
           type="success"
-          description={`Topic ${id ? "Updated" : "Created"} Successfully!`}
+          description={`Lesson ${id ? "Updated" : "Created"} Successfully!`}
         />
       ));
       navigate("/dashboard");
@@ -330,7 +321,7 @@ const AddLesson = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {!standardloading && !courseLoading && !lessaonsLoading ? (
+        {!standardloading && !courseLoading ? (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
@@ -398,24 +389,7 @@ const AddLesson = () => {
                 render={({ field }) => (
                   <FormItem className="col-span-2 w-full">
                     <FormLabel>Lesson</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Lesson" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {/* @ts-ignore */}
-                        {lessons?.map((lesson: Lesson) => (
-                          <SelectItem
-                            key={lesson.lesson_id}
-                            value={lesson.lesson_title}
-                          >
-                            {lesson.lesson_title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input placeholder="Lesson" {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
