@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  EllipsisVertical,
-  Loader2,
-  Plus,
-} from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import NotFound from "@/components/not-found";
 import { Button } from "@/components/ui/button";
-import CustomToast from "@/components/ui/custom-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,14 +22,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import {
-  useDeleteQuestionMutation,
-  useGetAllQuestionsQuery,
-} from "@/store/services/question";
+import { useGetAllQuestionsQuery } from "@/store/services/question";
 import { useGetAllStandardsQuery } from "@/store/services/standard";
 
-import Delete from "../assets/img/delete.svg";
-import Edit from "../assets/img/edit-2.svg";
 import Sort from "../assets/img/sort.svg";
 
 const ITEMS_PER_PAGE = 10;
@@ -62,36 +49,6 @@ const PracticeProblem = () => {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
-
-  const [deleteQuestion, { isLoading: deletingloading }] =
-    useDeleteQuestionMutation();
-
-  const handleDelete = async (id: number) => {
-    const response = await deleteQuestion({
-      id,
-      token,
-    });
-
-    if (response.data) {
-      toast.custom(() => (
-        <CustomToast
-          type="success"
-          title="Success"
-          description="Lesson deleted successfully!"
-        />
-      ));
-    } else {
-      toast.custom(() => (
-        <CustomToast
-          type="error"
-          title="Error"
-          description="Something went wrong!"
-        />
-      ));
-    }
-  };
-
-  // const uniqueStatuses = [...new Set(questiondata.map((q) => q.status))];
 
   const filteredData = data?.filter((q) => {
     return (
