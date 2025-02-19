@@ -283,96 +283,102 @@ const QuestionBank = () => {
               </TableHeader>
 
               <TableBody className={cn("text-md", "truncate text-ellipsis")}>
-                {currentData?.map((question, index) => (
-                  <TableRow
-                    key={index}
-                    className={
-                      index % 2 === 0
-                        ? "bg-white dark:bg-gray-700"
-                        : "bg-gray-100 dark:bg-gray-800"
-                    }
-                  >
-                    <TableCell className="overflow-hidden truncate font-medium">
-                      {question.question_title}
-                    </TableCell>
-
-                    <TableCell className="overflow-hidden truncate">
-                      {question.course_title}
-                    </TableCell>
-
-                    <TableCell className="overflow-hidden truncate">
-                      {question.lesson_title}
-                    </TableCell>
-
-                    <TableCell className="text-center">
-                      {question.standard_title}
-                    </TableCell>
-
-                    <TableCell
-                      className={cn("text-center font-semibold", {
-                        "text-green-500": question.difficulty_level === "easy",
-                        "text-blue-500": question.difficulty_level === "medium",
-                        "text-red-500": question.difficulty_level === "hard",
-                      })}
+                {currentData
+                  ?.filter((q) => q.question_type === "Actual")
+                  .map((question, index) => (
+                    <TableRow
+                      key={index}
+                      className={
+                        index % 2 === 0
+                          ? "bg-white dark:bg-gray-700"
+                          : "bg-gray-100 dark:bg-gray-800"
+                      }
                     >
-                      {question.difficulty_level}
-                    </TableCell>
+                      <TableCell className="overflow-hidden truncate font-medium">
+                        {question.question_title}
+                      </TableCell>
 
-                    <TableCell
-                      className={cn(
-                        "flex w-full gap-1.5 overflow-hidden truncate p-2"
-                      )}
-                    >
-                      {question.skill_tags.slice(0, 2).map((tag, tagIndex) => (
-                        <span
-                          key={tagIndex}
-                          className={cn(
-                            "w-fit shrink-0 rounded-md bg-white p-2 text-center font-medium",
-                            { "bg-muted": index % 2 === 0 }
-                          )}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </TableCell>
+                      <TableCell className="overflow-hidden truncate">
+                        {question.course_title}
+                      </TableCell>
 
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="focus:outline-none">
-                          <EllipsisVertical className="h-5 w-5 cursor-pointer" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link
-                              to={`/dashboard/editquestion/${question.question_id}`}
-                              className="flex items-center"
+                      <TableCell className="overflow-hidden truncate">
+                        {question.lesson_title}
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        {question.standard_title}
+                      </TableCell>
+
+                      <TableCell
+                        className={cn("text-center font-semibold", {
+                          "text-green-500":
+                            question.difficulty_level === "easy",
+                          "text-blue-500":
+                            question.difficulty_level === "medium",
+                          "text-red-500": question.difficulty_level === "hard",
+                        })}
+                      >
+                        {question.difficulty_level}
+                      </TableCell>
+
+                      <TableCell
+                        className={cn(
+                          "flex w-full gap-1.5 overflow-hidden truncate p-2"
+                        )}
+                      >
+                        {question.skill_tags
+                          .slice(0, 2)
+                          .map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className={cn(
+                                "w-fit shrink-0 rounded-md bg-white p-2 text-center font-medium",
+                                { "bg-muted": index % 2 === 0 }
+                              )}
                             >
-                              <img src={Edit} alt="Edit" className="mr-2" />
-                              &nbsp; Edit
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(question.question_id)}
-                          >
-                            {deletingloading ? (
-                              <Loader2 className="animate-spin" />
-                            ) : (
-                              <>
-                                <img
-                                  src={Delete}
-                                  alt="delete"
-                                  className="mr-2"
-                                />{" "}
-                                <span className="text-red-600">Delete</span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                              {tag}
+                            </span>
+                          ))}
+                      </TableCell>
+
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="focus:outline-none">
+                            <EllipsisVertical className="h-5 w-5 cursor-pointer" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link
+                                to={`/dashboard/editquestion/${question.question_id}`}
+                                className="flex items-center"
+                              >
+                                <img src={Edit} alt="Edit" className="mr-2" />
+                                &nbsp; Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(question.question_id)}
+                            >
+                              {deletingloading ? (
+                                <Loader2 className="animate-spin" />
+                              ) : (
+                                <>
+                                  <img
+                                    src={Delete}
+                                    alt="delete"
+                                    className="mr-2"
+                                  />
+                                  <span className="text-red-600">Delete</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </div>
