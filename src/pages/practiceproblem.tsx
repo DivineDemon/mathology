@@ -113,6 +113,7 @@ const PracticeProblem = () => {
       }
       return (
         <button
+          type="button"
           key={index}
           onClick={() => handlePageChange(Number(page))}
           className={cn(
@@ -309,6 +310,7 @@ const PracticeProblem = () => {
             </span>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="rounded-2xl border-2 border-gray-300 bg-gray-100 p-2.5 text-primary hover:bg-primary hover:text-white"
@@ -319,6 +321,7 @@ const PracticeProblem = () => {
                 {renderPagination()}
               </div>
               <button
+                type="button"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="rounded-2xl border-2 border-gray-300 bg-gray-100 p-2.5 text-primary hover:bg-primary hover:text-white"

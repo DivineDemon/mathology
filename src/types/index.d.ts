@@ -56,4 +56,6 @@ declare type User = {
   profile_picture_url: string;
   created_at?: string;
   updated_at?: string | null;
+  total_question?: number;
+  total_lesson?: number;
 };

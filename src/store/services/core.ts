@@ -45,6 +45,7 @@ export const api = createApi({
   baseQuery: baseQueryWith401Handling,
   keepUnusedDataFor: 5,
   tagTypes: [
+    "user",
     "course",
     "courses",
     "lesson",

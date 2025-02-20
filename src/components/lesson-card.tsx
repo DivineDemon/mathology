@@ -59,7 +59,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                     to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
                     className="flex items-center justify-center gap-3"
                   >
-                    <img src={Edit} alt="edit" /> Edit
+                    <img src={Edit} alt="edit" className="size-5 invert" /> Edit
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDelete}>
@@ -78,7 +78,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
           <img
             src={lesson.lesson_header}
             alt="geometry"
-            className="aspect-square w-full rounded-2xl object-cover"
+            className="aspect-video w-full rounded-2xl object-cover"
           />
           <div className="flex w-full items-center justify-between">
             <span className="text-sm font-semibold text-primary dark:text-gray-300">
@@ -88,7 +88,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
               {lesson.standard_title}
             </span>
           </div>
-          <span className="w-full text-left text-xl font-bold !leading-[20px] text-black dark:text-gray-300">
+          <span className="line-clamp-1 w-full pb-0.5 text-left text-xl font-bold !leading-[20px] text-black dark:text-gray-300">
             {lesson.lesson_title}
           </span>
           <span className="line-clamp-1 w-full text-left text-sm !leading-[16px] text-gray-500">

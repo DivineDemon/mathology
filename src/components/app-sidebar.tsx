@@ -23,6 +23,9 @@ const AppSidebar = () => {
   const { getToken, logout } = useKindeAuth();
   const [open, setOpen] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
+  const [newImage, _] = useState<string>(
+    "https://ui.shadcn.com/avatars/04.png"
+  );
 
   const { data } = useGetUserQuery(`${token}`, {
     skip: !token,
@@ -90,7 +93,13 @@ const AppSidebar = () => {
         <SidebarFooter className="w-full border-t border-gray-300 bg-gray-100 pt-2.5 dark:bg-sidebar">
           <div className="flex w-full items-center justify-center gap-2.5">
             <img
-              src={`${data?.profile_picture_url}`}
+              src={
+                data?.profile_picture_url
+                  ? data.profile_picture_url
+                  : newImage !== "https://ui.shadcn.com/avatars/04.png"
+                    ? newImage
+                    : "https://ui.shadcn.com/avatars/04.png"
+              }
               alt="User"
               className="size-10 shrink-0 cursor-pointer rounded-md border"
               onClick={() => navigate("/profile")}
@@ -111,6 +120,7 @@ const AppSidebar = () => {
               variant="outline"
               size="icon"
               className="shrink-0 text-red-500"
+              type="button"
             >
               <CirclePower />
             </Button>

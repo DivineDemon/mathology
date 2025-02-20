@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, X } from "lucide-react";
 
 import { Button } from "./ui/button";
 import {
@@ -23,6 +23,12 @@ const WarningModal = ({ cta, open, message, setOpen }: WarningModalProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-sm md:max-w-md">
+        <div
+          onClick={() => setOpen(false)}
+          className="absolute -right-3 -top-3 size-6 cursor-pointer rounded-md bg-destructive p-1.5 text-white"
+        >
+          <X className="size-full" />
+        </div>
         <DialogHeader>
           <DialogTitle>Warning</DialogTitle>
           <DialogDescription>

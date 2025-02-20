@@ -20,9 +20,32 @@ export const authApi = api.injectEndpoints({
           Authorization: `Bearer ${token}`,
         },
       }),
+      providesTags: ["user"],
+      transformResponse: (response: User) => response,
+    }),
+    putUser: build.mutation({
+      query: ({
+        token,
+        body,
+      }: {
+        token: string;
+        body: {
+          name: string;
+          designation: string;
+        };
+      }) => ({
+        url: "/users/edit",
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body,
+      }),
+      invalidatesTags: ["user"],
       transformResponse: (response: User) => response,
     }),
   }),
 });
 
-export const { useRegisterMutation, useGetUserQuery } = authApi;
+export const { useRegisterMutation, useGetUserQuery, usePutUserMutation } =
+  authApi;

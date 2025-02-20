@@ -2,12 +2,13 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { CircleCheckBig, CloudUpload, Loader2, X } from "lucide-react";
+import { CircleCheckBig, CloudUpload, Info, Loader2, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import AddLessonModal from "@/components/add_lesson_modal";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -45,7 +46,7 @@ import {
 } from "@/store/services/lesson";
 import { useGetAllStandardsQuery } from "@/store/services/standard";
 
-const onlyNumbersRegex = /^[0-9]+$/; // Matches only numbers
+const onlyNumbersRegex = /^[0-9]+$/;
 
 const lessonFormSchema = z.object({
   standard: z
@@ -82,10 +83,6 @@ const lessonFormSchema = z.object({
   lesson_description: z
     .string()
     .min(1, "Lesson description is required")
-    .regex(
-      /^[A-Za-z0-9\s]+$/,
-      "Lesson description can only contain letters and numbers"
-    )
     .refine((val) => !onlyNumbersRegex.test(val), {
       message: "Lesson description cannot be only numbers",
     }),
@@ -99,11 +96,13 @@ const AddLesson = () => {
   const lhRef = useRef<HTMLInputElement>(null);
   const [token, setToken] = useState<string>("");
   const [lesson, setLesson] = useState<string>("");
+  const [preview, setPreview] = useState<boolean>(false);
   const [lessonHeader, setLessonHeader] = useState<string>("");
   const [currentSkill, setCurrentSkill] = useState<string>("");
-  const [postLesson, { isLoading: posting }] = usePostLessonMutation();
-  const [updateLesson, { isLoading: updating }] = useUpdateLessonMutation();
   const [lessonFileName, setLessonFileName] = useState<string>("");
+  const [postLesson, { isLoading: posting }] = usePostLessonMutation();
+  const [modalType, setModalType] = useState<"image" | "text">("image");
+  const [updateLesson, { isLoading: updating }] = useUpdateLessonMutation();
 
   const form = useForm<z.infer<typeof lessonFormSchema>>({
     resolver: zodResolver(lessonFormSchema),
@@ -315,257 +314,304 @@ const AddLesson = () => {
   }, [getToken, data]);
 
   return (
-    <div className="flex h-screen w-full flex-col items-start justify-start overflow-y-auto">
-      <nav className="flex h-16 w-full items-center justify-between border-b p-5">
-        <div className="flex items-center justify-center gap-4">
-          <SidebarTrigger className="block lg:hidden" />
-          <div className="text-3xl font-bold lg:text-4xl">
-            {id ? "Edit" : "Add"} Lesson
+    <>
+      <AddLessonModal
+        open={preview}
+        setOpen={setPreview}
+        text={data?.lesson_file}
+        image={data?.lesson_header}
+        type={modalType}
+      />
+      <div className="flex h-screen w-full flex-col items-start justify-start overflow-y-auto">
+        <nav className="flex h-16 w-full items-center justify-between border-b p-5">
+          <div className="flex items-center justify-center gap-4">
+            <SidebarTrigger className="block lg:hidden" />
+            <div className="text-3xl font-bold lg:text-4xl">
+              {id ? "Edit" : "Add"} Lesson
+            </div>
           </div>
-        </div>
-      </nav>
-      <div className="flex h-full w-full flex-col items-start justify-start gap-5 p-5">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href="/dashboard"
-                className="font-semibold text-primary dark:text-blue-400"
+        </nav>
+        <div className="flex h-full w-full flex-col items-start justify-start gap-5 p-5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink
+                  href="/dashboard"
+                  className="font-semibold text-primary dark:text-blue-400"
+                >
+                  My Lessons
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="font-semibold text-gray-500 dark:text-gray-300">
+                  {id ? "Edit" : "Add"} Lesson
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          {!standardloading && !courseLoading ? (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="grid w-full grid-cols-4 gap-6"
               >
-                My Lessons
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="font-semibold text-gray-500 dark:text-gray-300">
-                {id ? "Edit" : "Add"} Lesson
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        {!standardloading && !courseLoading ? (
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="grid w-full grid-cols-4 gap-6"
-            >
-              <FormField
-                control={form.control}
-                name="standard"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Standard</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Standard" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {/* @ts-ignore */}
-                        {standards?.map((standard: Standard) => (
-                          <SelectItem
-                            key={standard.standard_id}
-                            value={standard.standard_title}
-                          >
-                            {standard.standard_title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="course"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Course</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Course" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {/* @ts-ignore */}
-                        {courses?.map((course: Course) => (
-                          <SelectItem
-                            key={course.course_id}
-                            value={course.course_title}
-                          >
-                            {course.course_title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lesson"
-                render={({ field }) => (
-                  <FormItem className="col-span-2 w-full">
-                    <FormLabel>Lesson</FormLabel>
-                    <Input placeholder="Lesson" {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="col-span-4 flex flex-col gap-4">
                 <FormField
                   control={form.control}
-                  name="skill_tags"
-                  render={() => (
-                    <FormItem className="col-span-4 w-full">
-                      <FormLabel>Skill Tags</FormLabel>
-                      <FormControl>
-                        <div className="flex w-full items-center justify-center gap-5">
-                          <Input
-                            placeholder="Geometry"
-                            value={currentSkill}
-                            onChange={(e) => setCurrentSkill(e.target.value)}
-                            className="flex-1"
-                          />
-                          <Button
-                            onClick={addSkills}
-                            type="button"
-                            variant="default"
-                          >
-                            Add
-                          </Button>
+                  name="standard"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Standard</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Standard" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {/* @ts-ignore */}
+                          {standards?.map((standard: Standard) => (
+                            <SelectItem
+                              key={standard.standard_id}
+                              value={standard.standard_title}
+                            >
+                              {standard.standard_title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="course"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Course</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Course" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {/* @ts-ignore */}
+                          {courses?.map((course: Course) => (
+                            <SelectItem
+                              key={course.course_id}
+                              value={course.course_title}
+                            >
+                              {course.course_title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lesson"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2 w-full">
+                      <FormLabel>Lesson</FormLabel>
+                      <Input placeholder="Lesson" {...field} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="col-span-4 flex flex-col gap-4">
+                  <FormField
+                    control={form.control}
+                    name="skill_tags"
+                    render={() => (
+                      <FormItem className="col-span-4 w-full">
+                        <FormLabel>Skill Tags</FormLabel>
+                        <FormControl>
+                          <div className="flex w-full items-center justify-center gap-5">
+                            <Input
+                              placeholder="Geometry"
+                              value={currentSkill}
+                              onChange={(e) => setCurrentSkill(e.target.value)}
+                              className="flex-1"
+                            />
+                            <Button
+                              onClick={addSkills}
+                              type="button"
+                              variant="default"
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {fields.length > 0 && (
+                    <div className="col-span-4 flex w-full max-w-full items-center justify-start gap-5 overflow-x-auto">
+                      {form.watch("skill_tags").map((tag, index) => (
+                        <div
+                          key={index}
+                          onClick={() => remove(index)}
+                          className="flex w-fit cursor-pointer items-center justify-center gap-2 rounded-md border border-primary bg-primary/20 px-4 py-1 text-blue-700"
+                        >
+                          <span className="pb-0.5 text-[14px] capitalize">
+                            {tag.value}
+                          </span>
+                          <X className="size-3.5" />
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <FormField
+                  control={form.control}
+                  name="lesson_description"
+                  render={({ field }) => (
+                    <FormItem className="col-span-4 w-full">
+                      <FormLabel>Lesson Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Lesson Description" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {fields.length > 0 && (
-                  <div className="col-span-4 flex w-full max-w-full items-center justify-start gap-5 overflow-x-auto">
-                    {form.watch("skill_tags").map((tag, index) => (
+                <div className="col-span-4 flex h-full w-full items-center justify-center gap-5 rounded-lg bg-white px-5 py-[110px] lg:gap-10 lg:p-[65px]">
+                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100 px-4 py-4 lg:w-96 lg:px-10">
+                    {id && (
                       <div
-                        key={index}
-                        onClick={() => remove(index)}
-                        className="flex w-fit cursor-pointer items-center justify-center gap-2 rounded-md border border-primary bg-primary/20 px-4 py-1 text-blue-700"
+                        onClick={() => {
+                          setModalType("image");
+                          setPreview(true);
+                        }}
+                        className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
                       >
-                        <span className="pb-0.5 text-[14px] capitalize">
-                          {tag.value}
+                        <span className="text-sm">
+                          <Info />
                         </span>
-                        <X className="size-3.5" />
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <FormField
-                control={form.control}
-                name="lesson_description"
-                render={({ field }) => (
-                  <FormItem className="col-span-4 w-full">
-                    <FormLabel>Lesson Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Lesson Description" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="col-span-4 flex h-full w-full items-center justify-center gap-5 rounded-lg bg-white px-5 py-[110px] lg:gap-10 lg:p-[65px]">
-                <div
-                  onClick={() => toggleInput("lh")}
-                  className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100 px-4 py-4 lg:w-96 lg:px-10"
-                >
-                  <input
-                    type="file"
-                    className="hidden"
-                    ref={lhRef}
-                    multiple={false}
-                    onChange={(e) => handleUpload(e, "lh")}
-                    accept="image/png, image/jpg, image/jpeg"
-                  />
-                  {lessonHeader ? (
-                    <span>
-                      <CircleCheckBig className="size-8 text-primary" />
-                    </span>
-                  ) : (
-                    <span>
-                      <CloudUpload className="size-8 text-primary" />
-                    </span>
-                  )}
+                    )}
+                    <div
+                      className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100"
+                      onClick={() => toggleInput("lh")}
+                    >
+                      <input
+                        type="file"
+                        className="hidden"
+                        ref={lhRef}
+                        multiple={false}
+                        onChange={(e) => handleUpload(e, "lh")}
+                        accept="image/png, image/jpg, image/jpeg"
+                      />
+                      {lessonHeader ? (
+                        <span>
+                          <CircleCheckBig className="size-8 text-primary" />
+                        </span>
+                      ) : (
+                        <span>
+                          <CloudUpload className="size-8 text-primary" />
+                        </span>
+                      )}
 
-                  <div className="flex flex-col items-center justify-center">
-                    <span className="w-full text-left font-medium">
-                      {lessonHeader ? "File Uploaded" : "Upload Lesson Header"}
-                    </span>
-                    <span className="w-full text-left text-xs text-gray-400">
-                      {lessonHeader
-                        ? lessonHeader
-                        : "Supported formats: .png, .jpg, .jpeg"}
-                    </span>
+                      <div className="flex w-full flex-col items-center justify-center">
+                        <span className="w-full text-left font-medium">
+                          {lessonHeader
+                            ? "File Uploaded"
+                            : "Upload Lesson Header"}
+                        </span>
+                        <span className="line-clamp-1 w-full text-left text-xs text-gray-400">
+                          {lessonHeader
+                            ? lessonHeader
+                            : "Supported formats: .png, .jpg, .jpeg"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10">
+                    {id && (
+                      <div
+                        onClick={() => {
+                          setModalType("text");
+                          setPreview(true);
+                        }}
+                        className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
+                      >
+                        <span className="text-sm text-black">
+                          <Info />
+                        </span>
+                      </div>
+                    )}
+                    <div
+                      className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary text-white"
+                      onClick={() => toggleInput("l")}
+                    >
+                      <input
+                        type="file"
+                        className="hidden"
+                        ref={lRef}
+                        multiple={false}
+                        onChange={(e) => handleUpload(e, "l")}
+                        accept="application/pdf"
+                      />
+                      {lessonFileName ? (
+                        <span>
+                          <CircleCheckBig className="size-8" />
+                        </span>
+                      ) : (
+                        <span>
+                          <CloudUpload className="size-8" />
+                        </span>
+                      )}
+
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="w-full text-left font-medium">
+                          {lessonFileName ? "File Uploaded" : "Upload Lesson"}
+                        </span>
+                        <span className="line-clamp-1 w-full text-left text-xs text-white/80">
+                          {lessonFileName
+                            ? lessonFileName
+                            : "Supported formats: .pdf"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div
-                  onClick={() => toggleInput("l")}
-                  className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10"
-                >
-                  <input
-                    type="file"
-                    className="hidden"
-                    ref={lRef}
-                    multiple={false}
-                    onChange={(e) => handleUpload(e, "l")}
-                    accept="application/pdf"
-                  />
-                  {lessonFileName ? (
-                    <span>
-                      <CircleCheckBig className="size-8" />
-                    </span>
-                  ) : (
-                    <span>
-                      <CloudUpload className="size-8" />
-                    </span>
-                  )}
-
-                  <div className="flex flex-col items-center justify-center">
-                    <span className="w-full text-left font-medium">
-                      {lessonFileName ? "File Uploaded" : "Upload Lesson"}
-                    </span>
-                    <span className="w-full text-left text-xs text-white/80">
-                      {lessonFileName
-                        ? lessonFileName
-                        : "Supported formats: .pdf"}
-                    </span>
-                  </div>
+                <div className="col-span-4 flex w-full cursor-pointer items-end justify-end pb-5">
+                  <Button
+                    type="submit"
+                    variant="default"
+                    className="w-fit text-white"
+                    disabled={posting || updating}
+                  >
+                    {posting || updating ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
                 </div>
-              </div>
-              <div className="col-span-4 flex w-full cursor-pointer items-end justify-end pb-5">
-                <Button
-                  type="submit"
-                  variant="default"
-                  className="w-fit text-white"
-                  disabled={posting || updating}
-                >
-                  {posting || updating ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    "Submit"
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        ) : (
-          <span className="mx-auto flex h-full w-full items-center justify-center">
-            <Loader2 className="size-10 animate-spin text-primary" />
-          </span>
-        )}
+              </form>
+            </Form>
+          ) : (
+            <span className="mx-auto flex h-full w-full items-center justify-center">
+              <Loader2 className="size-10 animate-spin text-primary" />
+            </span>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
