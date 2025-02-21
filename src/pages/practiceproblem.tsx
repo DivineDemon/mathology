@@ -173,7 +173,7 @@ const PracticeProblem = () => {
 
   return (
     <div className="mx-auto flex h-full w-screen flex-col lg:w-full">
-      <nav className="flex h-16 w-full items-center justify-between border-b px-5 py-2.5">
+      <nav className="flex h-16 w-full items-center shrink-0 justify-between border-b px-5 py-2.5">
         <div className="flex items-center justify-center gap-4">
           <SidebarTrigger className="block lg:hidden" />
           <div className="text-3xl font-bold lg:text-4xl">Practice Problem</div>

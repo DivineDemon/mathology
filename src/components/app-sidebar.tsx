@@ -108,8 +108,8 @@ const AppSidebar = () => {
               onClick={() => navigate("/profile")}
               className="flex w-32 flex-col items-center justify-center"
             >
-              <span className="w-full overflow-hidden truncate text-left font-semibold capitalize">
-                {data?.name}
+              <span className="w-full overflow-hidden truncate text-left font-semibold">
+                {data?.email}
               </span>
               <span className="w-full overflow-hidden truncate text-left text-xs font-light">
                 {data?.designation}
