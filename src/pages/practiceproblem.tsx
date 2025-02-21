@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  EllipsisVertical,
+  Loader2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import NotFound from "@/components/not-found";
 import { Button } from "@/components/ui/button";
+import CustomToast from "@/components/ui/custom-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,9 +29,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useGetAllQuestionsQuery } from "@/store/services/question";
+import {
+  useDeleteQuestionMutation,
+  useGetAllQuestionsQuery,
+} from "@/store/services/question";
 import { useGetAllStandardsQuery } from "@/store/services/standard";
 
+import Delete from "../assets/img/delete.svg";
+import Edit from "../assets/img/edit-2.svg";
 import Sort from "../assets/img/sort.svg";
 
 const ITEMS_PER_PAGE = 10;
@@ -34,7 +46,6 @@ const PracticeProblem = () => {
   const { getToken } = useKindeAuth();
   const [token, setToken] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  // const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
     null
   );
@@ -50,11 +61,13 @@ const PracticeProblem = () => {
     refetchOnMountOrArgChange: true,
   });
 
+  const [deleteQuestion, { isLoading: deletingloading }] =
+    useDeleteQuestionMutation();
+
   const filteredData = data?.filter((q) => {
     return (
       (!selectedStandard || q.standard_title === selectedStandard) &&
       (!selectedDifficulty || q.difficulty_level === selectedDifficulty)
-      // && (!selectedStatus || q.status === selectedStatus)
     );
   });
 
@@ -72,6 +85,31 @@ const PracticeProblem = () => {
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    const response = await deleteQuestion({
+      id,
+      token,
+    });
+
+    if (response.data) {
+      toast.custom(() => (
+        <CustomToast
+          type="success"
+          title="Success"
+          description="Question deleted successfully!"
+        />
+      ));
+    } else {
+      toast.custom(() => (
+        <CustomToast
+          type="error"
+          title="Error"
+          description="Something went wrong!"
+        />
+      ));
     }
   };
 
@@ -146,7 +184,8 @@ const PracticeProblem = () => {
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
       ) : //@ts-ignore
-      data?.length > 0 ? (
+      data?.length > 0 &&
+        data?.filter((q) => q.question_type === "Practice").length !== 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -227,6 +266,7 @@ const PracticeProblem = () => {
                   </TableHead>
 
                   <TableHead>Tags</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -264,7 +304,7 @@ const PracticeProblem = () => {
                       </TableCell>
 
                       <TableCell
-                        className={cn("text-center font-semibold", {
+                        className={cn("text-center font-semibold capitalize", {
                           "text-green-500":
                             question.difficulty_level === "easy",
                           "text-blue-500":
@@ -293,6 +333,50 @@ const PracticeProblem = () => {
                               {tag}
                             </span>
                           ))}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="focus:outline-none">
+                            <EllipsisVertical className="h-5 w-5 cursor-pointer" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-black"
+                              onClick={() =>
+                                navigate(
+                                  `/dashboard/editquestion/${question.question_id}`
+                                )
+                              }
+                            >
+                              <img
+                                src={Edit}
+                                alt="Edit"
+                                className="mr-2 size-5 invert"
+                              />
+                              &nbsp;
+                              <span className="flex-1 text-left text-black">
+                                Edit
+                              </span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(question.question_id)}
+                            >
+                              {deletingloading ? (
+                                <Loader2 className="animate-spin" />
+                              ) : (
+                                <>
+                                  <img
+                                    src={Delete}
+                                    alt="delete"
+                                    className="mr-2"
+                                  />
+                                  <span className="text-red-600">Delete</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}

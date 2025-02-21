@@ -198,7 +198,8 @@ const QuestionBank = () => {
           <Loader2 className="size-10 animate-spin text-primary" />
         </div>
       ) : //@ts-ignore
-      data?.length > 0 ? (
+      data?.length > 0 &&
+        data?.filter((q) => q.question_type === "Actual").length !== 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -313,7 +314,7 @@ const QuestionBank = () => {
                       </TableCell>
 
                       <TableCell
-                        className={cn("text-center font-semibold", {
+                        className={cn("text-center font-semibold capitalize", {
                           "text-green-500":
                             question.difficulty_level === "easy",
                           "text-blue-500":

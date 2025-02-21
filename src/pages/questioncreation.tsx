@@ -253,7 +253,11 @@ const AddTopic = () => {
           description={`Question ${id ? "updated" : "created"} successfully`}
         />
       ));
-      navigate("/questionbank");
+      if (values.question_type === "Actual") {
+        navigate("/questionbank");
+      } else {
+        navigate("/practiceproblems");
+      }
     } catch (error) {
       toast.custom(() => (
         <CustomToast

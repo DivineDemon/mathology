@@ -131,26 +131,6 @@ const Profile = () => {
             alt="user-dp"
             className="size-32 rounded-full border"
           />
-          {/* <input
-            ref={imageRef}
-            type="file"
-            className="hidden"
-            onChange={handleUpload}
-          />
-          {isEditing && (
-            <Button
-              size="sm"
-              type="button"
-              variant="default"
-              onClick={() => {
-                if (imageRef.current) {
-                  imageRef.current.click();
-                }
-              }}
-            >
-              Update Image
-            </Button>
-          )} */}
         </div>
         <div className="grid w-full grid-cols-2 items-center justify-center gap-5">
           <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
