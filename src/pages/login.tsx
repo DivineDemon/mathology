@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +44,9 @@ const Login = () => {
       <div className="grid h-[calc(100vh-1px)] w-full max-w-7xl grid-cols-2 gap-5 overflow-hidden p-5">
         <div className="relative col-span-2 flex w-full flex-col items-center justify-center gap-5 rounded-3xl border bg-[#FFFFFF] p-5 shadow-md dark:bg-gray-700/50 md:col-span-1 lg:p-10 xl:p-20">
           <div className="mb-5 flex w-full flex-col items-start justify-start gap-2">
-            <span className="w-full text-center text-4xl font-extrabold">
+            <Link to="https://mathology.io" className="w-full text-center text-4xl font-extrabold">
               Login
-            </span>
+            </Link>
             <span className="text-md w-full text-center font-medium text-gray-400">
               Login to your existing account of Mathology
             </span>
