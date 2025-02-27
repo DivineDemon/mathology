@@ -296,6 +296,7 @@ const QuestionBank = () => {
                           ? "bg-white dark:bg-gray-700"
                           : "bg-gray-100 dark:bg-gray-800"
                       }
+                      title={question.question_title}
                     >
                       <TableCell className="overflow-hidden truncate font-medium">
                         {question.question_title}
