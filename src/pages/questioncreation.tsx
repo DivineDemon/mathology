@@ -178,12 +178,26 @@ const AddTopic = () => {
 
   const addSkills = () => {
     const rawSkills = currentSkill
-      .split(/,\s?/)
+      .split(/\s*,\s*/)
       .map((s) => s.trim().toLowerCase())
       .filter((s) => s);
 
     const uniqueInputSkills = Array.from(new Set(rawSkills));
-    const presentSkills = fields.map((field) => field.value);
+
+    const invalidSkills = uniqueInputSkills.filter((skill) => skill.length > 7);
+    if (invalidSkills.length > 0) {
+      //@ts-ignore
+      toast.custom(() => (
+        <CustomToast
+          type="error"
+          title="Error"
+          description={`Skills must be 7 characters or less: ${invalidSkills.join(", ")}`}
+        />
+      ));
+      return;
+    }
+
+    const presentSkills = fields.map((field) => field.value.toLowerCase());
 
     const duplicateSkills = uniqueInputSkills.filter((skill) =>
       presentSkills.includes(skill)
@@ -195,10 +209,9 @@ const AddTopic = () => {
         <CustomToast
           type="error"
           title="Error"
-          description="Duplicate skills detected. Please remove duplicates."
+          description={`Duplicate skills detected: ${duplicateSkills.join(", ")}`}
         />
       ));
-
       return;
     }
 
@@ -621,7 +634,11 @@ const AddTopic = () => {
                     render={({ field }) => (
                       <FormItem className="font-code col-span-1 w-full">
                         <FormLabel className="text-black">
-                          Question Description
+                          Question Description&nbsp;
+                          <span className="text-[10px] text-muted-foreground">
+                            {form.watch("question_description").length}/150
+                            characters
+                          </span>
                         </FormLabel>
                         <FormControl>
                           <Controlled

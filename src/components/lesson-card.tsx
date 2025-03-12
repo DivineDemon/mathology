@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { EllipsisVertical, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -50,7 +51,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
   return (
     <>
       <Card
-        className="w-full p-0 cursor-pointer"
+        className="w-full cursor-pointer p-0"
         onClick={() => navigate(`/practiceproblems/${lesson.lesson_id}`)}
       >
         <CardContent className="p-0">
@@ -71,13 +72,13 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                   className="ml-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <EllipsisVertical className="text-black bg-white bg-opacity-70 rounded-md" />
+                  <EllipsisVertical className="rounded-md bg-white bg-opacity-70 text-black" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-24" align="end">
                   <DropdownMenuItem className="border-b">
                     <Link
                       to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
-                      className="flex items-center justify-start w-full"
+                      className="flex w-full items-center justify-start"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Edit
@@ -88,7 +89,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                       e.stopPropagation();
                       setShowConfirmModal(true);
                     }}
-                    className="border-b cursor-pointer"
+                    className="cursor-pointer border-b"
                   >
                     <span className="text-red-600">Delete</span>
                   </DropdownMenuItem>
@@ -96,7 +97,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                     <DropdownMenuItem>
                       <Link
                         to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
-                        className="flex items-center justify-start w-full"
+                        className="flex w-full items-center justify-start"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Publish
@@ -147,11 +148,15 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
             <img src={Delete1} alt="" />
             <h1 className="text-2xl font-extrabold">Are you sure?</h1>
             <p className="text-center text-gray-400">
-              Do you really want to delete these records? This process cannot be undone.
+              Do you really want to delete these records? This process cannot be
+              undone.
             </p>
           </div>
           <div className="mt-4 flex w-full justify-center gap-2">
-            <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
               Cancel
             </Button>
             <Button

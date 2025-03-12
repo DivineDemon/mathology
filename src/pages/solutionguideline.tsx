@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { useParams } from "react-router-dom";
 
 import {
   Breadcrumb,
@@ -12,9 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-
 import { useGetLessonByIdQuery } from "@/store/services/lesson";
-import { Loader2 } from "lucide-react";
 
 const SolutionGuideline = () => {
   const { id } = useParams();
@@ -30,8 +30,6 @@ const SolutionGuideline = () => {
     };
     handleToken();
   }, [getToken]);
-
- 
 
   const { data, isLoading } = useGetLessonByIdQuery(
     {
@@ -60,30 +58,30 @@ const SolutionGuideline = () => {
                 href="/dashboard"
                 className="font-semibold text-primary dark:text-blue-400"
               >
-              My Lesson
+                My Lesson
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="font-semibold text-gray-500 dark:text-gray-300">
-               Lesson View
+                Lesson View
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         {isLoading ? (
-          <div className="flex w-full h-full justify-center items-center">
+          <div className="flex h-full w-full items-center justify-center">
             <Loader2 className="size-10 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="flex w-full flex-col items-start justify-start gap-5 rounded-3xl bg-white mb-4 p-8 dark:bg-muted lg:gap-8">
+          <div className="mb-4 flex w-full flex-col items-start justify-start gap-5 rounded-3xl bg-white p-8 dark:bg-muted lg:gap-8">
             <div className="flex w-full flex-col gap-4">
               <span className="font-semibold text-primary">
                 {data?.course_title}
               </span>
               <div className="flex w-full justify-between text-3xl font-semibold text-[#333333] dark:text-white/50 lg:text-4xl">
                 <span>{data?.lesson_title}</span>
-                <span className="text-sm bg-primary text-white flex justify-center items-center px-8 rounded-lg">
+                <span className="flex items-center justify-center rounded-lg bg-primary px-8 text-sm text-white">
                   {data?.standard_title}
                 </span>
               </div>
@@ -102,8 +100,8 @@ const SolutionGuideline = () => {
               </div>
             </div>
 
-            <div className="w-full p-4 rounded-lg text-gray-500 ">
-              <ReactMarkdown >
+            <div className="w-full rounded-lg p-4 text-gray-500">
+              <ReactMarkdown>
                 {data?.lesson_file || "No lesson file available."}
               </ReactMarkdown>
             </div>

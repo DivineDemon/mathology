@@ -1,33 +1,55 @@
 import { useEffect, useState } from "react";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import CustomToast from "@/components/ui/custom-toast";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   useGetUserQuery,
   usePutUserMutation,
   useUserStatsQuery,
 } from "@/store/services/auth";
 
+const profileSchema = z.object({
+  name: z.string().min(5, "Name must be at least 5 characters long"),
+});
+
 const Profile = () => {
+  const form = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+  });
+
   const { getToken } = useKindeAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [newImage, _] = useState<string>(
-    "https://ui.shadcn.com/avatars/04.png"
-  );
+  const [editUser, { isLoading }] = usePutUserMutation();
   const [token, setToken] = useState<string | null>(null);
+
+  // const [name, setName] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [newImage, _] = useState<string>(
+  //   "https://ui.shadcn.com/avatars/04.png"
+  // );
+  // const [designation, setDesignation] = useState<string>("");
+
   const { data } = useGetUserQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
-  const [editUser, { isLoading }] = usePutUserMutation();
-  const [designation, setDesignation] = useState<string>("");
+
   const { data: stats } = useUserStatsQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
@@ -40,11 +62,11 @@ const Profile = () => {
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (values: z.infer<typeof profileSchema>) => {
     const response = await editUser({
       body: {
-        name,
-        designation,
+        name: values.name,
+        designation: "Creator",
       },
       token: `${token}`,
     });
@@ -74,9 +96,10 @@ const Profile = () => {
 
   useEffect(() => {
     if (data) {
-      setName(data.name || "");
-      setDesignation(data?.designation);
-      setEmail(data.email || "");
+      form.setValue("name", data.name);
+      // setName(data.name || "");
+      // setDesignation(data?.designation);
+      // setEmail(data.email || "");
     }
   }, [data]);
 
@@ -92,62 +115,61 @@ const Profile = () => {
                 you share.
               </span>
             </div>
-            <Button
-              type="button"
-              className="text-sm"
-              onClick={handleEdit}
-              disabled={isLoading}
-            >
-              {isLoading ? <Loader2 className="animate-spin" /> : "Save"}
-            </Button>
           </div>
         </div>
 
         <div className="grid w-full grid-cols-2 items-start justify-center gap-[20%]">
-          <div className="space-y-8">
-            <div className="mb-10 flex">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleEdit)}
+              className="col-span-1 flex w-full flex-col items-start justify-start gap-10"
+            >
               <img
                 src={
                   data?.profile_picture_url
                     ? data.profile_picture_url
-                    : newImage !== "https://ui.shadcn.com/avatars/04.png"
-                      ? newImage
-                      : "https://ui.shadcn.com/avatars/04.png"
+                    : "https://ui.shadcn.com/avatars/04.png"
                 }
                 alt="user-dp"
                 className="size-32 rounded-full border"
               />
-            </div>
-            <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-              <Label
-                htmlFor="name"
-                className="w-full text-left text-sm font-medium"
-              >
-                Name
-              </Label>
-              <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full border bg-gray-100/20"
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="col-span-2 w-full">
+                    <FormLabel className="text-black">Full Name</FormLabel>
+                    <Input
+                      placeholder="Lesson"
+                      className={cn("bg-primary/5", {
+                        "border border-red-500 bg-red-500/10":
+                          form.formState.errors.name,
+                      })}
+                      {...field}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-              <Label
-                htmlFor="email"
-                className="w-full text-left text-sm font-medium"
-              >
-                Email
-              </Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={true}
-                className="w-full bg-gray-100"
-              />
-            </div>
-          </div>
+              <div className="flex w-full flex-col items-center justify-center gap-2">
+                <Label
+                  htmlFor="email"
+                  className="w-full text-left text-sm font-medium"
+                >
+                  Email
+                </Label>
+                <Input
+                  type="email"
+                  disabled={true}
+                  value={data?.email}
+                  className="w-full bg-gray-100"
+                />
+              </div>
+              <Button type="submit" className="text-sm" disabled={isLoading}>
+                {isLoading ? <Loader2 className="animate-spin" /> : "Save"}
+              </Button>
+            </form>
+          </Form>
           <div className="grid aspect-square grid-cols-2 gap-10">
             <div className="flex flex-col items-center justify-center gap-3 rounded-lg bg-primary/5 p-10">
               <h1 className="text-6xl font-extrabold text-primary">

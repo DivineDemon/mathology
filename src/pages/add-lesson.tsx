@@ -151,12 +151,26 @@ const AddLesson = () => {
 
   const addSkills = () => {
     const rawSkills = currentSkill
-      .split(/,\s?/)
+      .split(/\s*,\s*/)
       .map((s) => s.trim().toLowerCase())
       .filter((s) => s);
 
     const uniqueInputSkills = Array.from(new Set(rawSkills));
-    const presentSkills = fields.map((field) => field.value);
+
+    const invalidSkills = uniqueInputSkills.filter((skill) => skill.length > 7);
+    if (invalidSkills.length > 0) {
+      //@ts-ignore
+      toast.custom(() => (
+        <CustomToast
+          type="error"
+          title="Error"
+          description={`Skills must be 7 characters or less: ${invalidSkills.join(", ")}`}
+        />
+      ));
+      return;
+    }
+
+    const presentSkills = fields.map((field) => field.value.toLowerCase());
 
     const duplicateSkills = uniqueInputSkills.filter((skill) =>
       presentSkills.includes(skill)
@@ -168,10 +182,9 @@ const AddLesson = () => {
         <CustomToast
           type="error"
           title="Error"
-          description="Duplicate skills detected. Please remove duplicates."
+          description={`Duplicate skills detected: ${duplicateSkills.join(", ")}`}
         />
       ));
-
       return;
     }
 
@@ -507,7 +520,11 @@ const AddLesson = () => {
                   render={({ field }) => (
                     <FormItem className="col-span-4 w-full">
                       <FormLabel className="text-black">
-                        Lesson Description
+                        Lesson Description&nbsp;
+                        <span className="text-[10px] text-muted-foreground">
+                          {form.watch("lesson_description").length}/150
+                          characters
+                        </span>
                       </FormLabel>
                       <FormControl>
                         <Textarea

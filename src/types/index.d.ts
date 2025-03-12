@@ -62,4 +62,3 @@ declare type User = {
   total_question?: number;
   total_lesson?: number;
 };
-

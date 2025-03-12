@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { CirclePower } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import Logo from "@/assets/img/logo.svg"
+
+import Logo from "@/assets/img/logo.svg";
 import {
   Sidebar,
   SidebarContent,
@@ -53,18 +54,18 @@ const AppSidebar = () => {
       />
 
       <Sidebar className="border-r border-gray-300">
-        <SidebarHeader className="h-16  bg-white dark:bg-sidebar">
+        <SidebarHeader className="h-16 bg-white dark:bg-sidebar">
           <div className="flex h-full w-full items-center justify-center gap-1.5">
             <span
               className="cursor-pointer text-left text-4xl font-bold text-primary dark:text-white"
               onClick={() => navigate("/")}
             >
-              <img src={Logo} alt=""  className="p-6 "/>
+              <img src={Logo} alt="" className="p-6" />
             </span>
           </div>
         </SidebarHeader>
 
-        <SidebarContent className="flex w-full flex-col items-center justify-start bg-white mt-6 p-2.5 dark:bg-sidebar">
+        <SidebarContent className="mt-6 flex w-full flex-col items-center justify-start bg-white p-2.5 dark:bg-sidebar">
           {items.map((item, idx) => (
             <Link
               to={item.url}
@@ -90,7 +91,7 @@ const AppSidebar = () => {
           ))}
         </SidebarContent>
 
-        <SidebarFooter className="w-full   bg-white pt-2.5 dark:bg-sidebar">
+        <SidebarFooter className="w-full bg-white pt-2.5 dark:bg-sidebar">
           <div className="flex w-full items-center justify-center gap-2.5">
             <img
               src={

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 // import NotFound from "@/components/not-found";
 import CreateFirst from "@/components/create-first-lesson";
 import LessonCard from "@/components/lesson-card";
+import NotFound from "@/components/not-found";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -17,9 +18,8 @@ import {
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRegisterMutation } from "@/store/services/auth";
-import { useGetAllLessonsQuery } from "@/store/services/lesson";
 import { useGetAllCoursesQuery } from "@/store/services/course";
-import NotFound from "@/components/not-found";
+import { useGetAllLessonsQuery } from "@/store/services/lesson";
 
 const MyLessons = () => {
   const navigate = useNavigate();
@@ -84,13 +84,11 @@ const MyLessons = () => {
 
     setLessons(filteredLessons);
   };
-  const { data: courses } = useGetAllCoursesQuery(
-    `${token}`,
-    {
-      skip: !token,
-      refetchOnMountOrArgChange: true,
-    }
-  );
+
+  const { data: courses } = useGetAllCoursesQuery(`${token}`, {
+    skip: !token,
+    refetchOnMountOrArgChange: true,
+  });
 
   useEffect(() => {
     handleToken();
@@ -135,17 +133,19 @@ const MyLessons = () => {
             value={searchQuery}
             placeholder="Search by Topic"
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-none bg-transparent shadow-none h-8"
+            className="h-8 border-none bg-transparent shadow-none"
           />
         </div>
 
         <div className="flex items-center gap-4">
           <Select value={standardFilter} onValueChange={setStandardFilter}>
-            <SelectTrigger className="w-[140px] h-8 border-gray-300 font-light dark:border-gray-700">
+            <SelectTrigger className="h-8 w-[140px] border-gray-300 font-light dark:border-gray-700">
               <SelectValue placeholder="All Standard" />
             </SelectTrigger>
             <SelectContent className="font-extralight">
-              <SelectItem value="All" className="font-extralight">All Standard</SelectItem>
+              <SelectItem value="All" className="font-extralight">
+                All Standard
+              </SelectItem>
               <SelectItem value="K1">K1</SelectItem>
               <SelectItem value="K2">K2</SelectItem>
               <SelectItem value="K3">K3</SelectItem>
@@ -153,7 +153,7 @@ const MyLessons = () => {
           </Select>
 
           <Select value={courseFilter} onValueChange={setCourseFilter}>
-            <SelectTrigger className="w-[140px] h-8 border-gray-300 font-light dark:border-gray-700">
+            <SelectTrigger className="h-8 w-[140px] border-gray-300 font-light dark:border-gray-700">
               <SelectValue placeholder="All Courses" />
             </SelectTrigger>
             <SelectContent>
@@ -164,7 +164,6 @@ const MyLessons = () => {
                 </SelectItem>
               ))}
             </SelectContent>
-
           </Select>
         </div>
       </div>
@@ -191,8 +190,6 @@ const MyLessons = () => {
           ))
         )}
       </div>
-
-
     </div>
   );
 };
