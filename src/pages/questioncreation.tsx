@@ -373,6 +373,14 @@ const AddTopic = () => {
     }
   }, [getToken, data]);
 
+  useEffect(() => {
+    // @ts-ignore
+    if (window.MathJax) {
+      // @ts-ignore
+      window.MathJax.typesetPromise();
+    }
+  }, [questionDescription]);
+
   return (
     <>
       <AddLessonModal
