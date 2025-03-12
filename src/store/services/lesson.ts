@@ -4,7 +4,6 @@ export const lessonApi = api.injectEndpoints({
   endpoints: (build) => ({
     getAllLessons: build.query({
       query: (token: string) => ({
-        // url: "/lessons/creator/",
         url: "/lessons/creator/",
         method: "GET",
         headers: {
@@ -32,6 +31,7 @@ export const lessonApi = api.injectEndpoints({
           lesson_file: string;
           course_id: number;
           standard_id: number;
+          is_published: boolean;
         };
       }) => ({
         url: "/lessons/",
@@ -68,6 +68,7 @@ export const lessonApi = api.injectEndpoints({
           lesson_file: string;
           course_id: number;
           standard_id: number;
+          is_published: boolean;
         };
       }) => ({
         url: `/lessons/${id}`,
@@ -90,6 +91,18 @@ export const lessonApi = api.injectEndpoints({
       providesTags: ["lesson"],
       transformResponse: (response: Lesson) => response,
     }),
+
+    getLessonById: build.query({
+      query: ({ token, id }: { token: string; id: number }) => ({
+        url: `/lessons/creator/${id}`,
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+
+      transformResponse: (response: Lesson) => response,
+    }),
   }),
 });
 
@@ -99,4 +112,5 @@ export const {
   useGetAllLessonsQuery,
   useDeleteLessonMutation,
   useUpdateLessonMutation,
+  useGetLessonByIdQuery,
 } = lessonApi;

@@ -44,8 +44,27 @@ export const authApi = api.injectEndpoints({
       invalidatesTags: ["user"],
       transformResponse: (response: User) => response,
     }),
+    userStats: build.query({
+      query: (token: string) => ({
+        url: "/user-statistics/count",
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+      transformResponse: (response: {
+        practice_questions: number;
+        actual_questions: number;
+        total_lessons: number;
+        published_lessons: number;
+      }) => response,
+    }),
   }),
 });
 
-export const { useRegisterMutation, useGetUserQuery, usePutUserMutation } =
-  authApi;
+export const {
+  useRegisterMutation,
+  useGetUserQuery,
+  usePutUserMutation,
+  useUserStatsQuery,
+} = authApi;

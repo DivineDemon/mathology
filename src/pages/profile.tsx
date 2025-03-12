@@ -1,34 +1,37 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import { CopyCheck, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-import Edit from "@/assets/img/edit-2.svg";
 import { Button } from "@/components/ui/button";
+import CustomToast from "@/components/ui/custom-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-// import { parseImage } from "@/lib/utils";
-import { useGetUserQuery, usePutUserMutation } from "@/store/services/auth";
+import {
+  useGetUserQuery,
+  usePutUserMutation,
+  useUserStatsQuery,
+} from "@/store/services/auth";
 
 const Profile = () => {
   const { getToken } = useKindeAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  // const imageRef = useRef<HTMLInputElement>(null);
   const [newImage, _] = useState<string>(
     "https://ui.shadcn.com/avatars/04.png"
   );
-  const [isEditing, setIsEditing] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [designation, setDesignation] = useState<string>("");
-
-  const { data, isLoading } = useGetUserQuery(`${token}`, {
+  const { data } = useGetUserQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
-
-  const [editUser, { isLoading: updating }] = usePutUserMutation();
+  const [editUser, { isLoading }] = usePutUserMutation();
+  const [designation, setDesignation] = useState<string>("");
+  const { data: stats } = useUserStatsQuery(`${token}`, {
+    skip: !token,
+    refetchOnMountOrArgChange: true,
+  });
 
   const handleToken = async () => {
     if (getToken) {
@@ -38,7 +41,7 @@ const Profile = () => {
   };
 
   const handleEdit = async () => {
-    await editUser({
+    const response = await editUser({
       body: {
         name,
         designation,
@@ -46,16 +49,24 @@ const Profile = () => {
       token: `${token}`,
     });
 
-    setIsEditing(!isEditing);
+    if (response.error) {
+      toast.custom(() => (
+        <CustomToast
+          type="error"
+          title="Error"
+          description="Something went wrong!"
+        />
+      ));
+    } else {
+      toast.custom(() => (
+        <CustomToast
+          type="success"
+          title="Success"
+          description="Successfully updated Profile!"
+        />
+      ));
+    }
   };
-
-  // const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     const file = e.target.files[0];
-  //     const imageUrl = await parseImage(file);
-  //     setNewImage(imageUrl as string);
-  //   }
-  // };
 
   useEffect(() => {
     handleToken();
@@ -66,9 +77,6 @@ const Profile = () => {
       setName(data.name || "");
       setDesignation(data?.designation);
       setEmail(data.email || "");
-      // if (data.profile_picture_url) {
-      //   setNewImage(data.profile_picture_url);
-      // }
     }
   }, [data]);
 
@@ -84,147 +92,90 @@ const Profile = () => {
                 you share.
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                className="text-sm"
-                onClick={handleEdit}
-                disabled={isLoading}
+            <Button
+              type="button"
+              className="text-sm"
+              onClick={handleEdit}
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="animate-spin" /> : "Save"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid w-full grid-cols-2 items-start justify-center gap-[20%]">
+          <div className="space-y-8">
+            <div className="mb-10 flex">
+              <img
+                src={
+                  data?.profile_picture_url
+                    ? data.profile_picture_url
+                    : newImage !== "https://ui.shadcn.com/avatars/04.png"
+                      ? newImage
+                      : "https://ui.shadcn.com/avatars/04.png"
+                }
+                alt="user-dp"
+                className="size-32 rounded-full border"
+              />
+            </div>
+            <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
+              <Label
+                htmlFor="name"
+                className="w-full text-left text-sm font-medium"
               >
-                {isEditing ? (
-                  updating ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <>
-                      <CopyCheck /> Save
-                    </>
-                  )
-                ) : (
-                  <>
-                    <img src={Edit} alt="edit" /> Edit Profile{" "}
-                  </>
-                )}
-              </Button>
-              {isEditing && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="text-sm"
-                  disabled={updating}
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancel
-                </Button>
-              )}
+                Name
+              </Label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border bg-gray-100/20"
+              />
+            </div>
+            <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
+              <Label
+                htmlFor="email"
+                className="w-full text-left text-sm font-medium"
+              >
+                Email
+              </Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={true}
+                className="w-full bg-gray-100"
+              />
             </div>
           </div>
-        </div>
-        <div className="mr-auto flex items-end justify-end gap-5">
-          <img
-            src={
-              data?.profile_picture_url
-                ? data.profile_picture_url
-                : newImage !== "https://ui.shadcn.com/avatars/04.png"
-                  ? newImage
-                  : "https://ui.shadcn.com/avatars/04.png"
-            }
-            alt="user-dp"
-            className="size-32 rounded-full border"
-          />
-        </div>
-        <div className="grid w-full grid-cols-2 items-center justify-center gap-5">
-          <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-            <Label
-              htmlFor="name"
-              className="w-full text-left text-sm font-medium"
-            >
-              Name
-            </Label>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!isEditing ? true : false}
-              className={cn(
-                "w-full border bg-gray-100/20",
-                !isEditing && "cursor-not-allowed border-none bg-gray-100"
-              )}
-            />
-          </div>
-          <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-            <Label
-              htmlFor="email"
-              className="w-full text-left text-sm font-medium"
-            >
-              Email
-            </Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={true}
-              className="w-full bg-gray-100"
-            />
-          </div>
-          <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-            <Label
-              htmlFor="designation"
-              className="w-full text-left text-sm font-medium"
-            >
-              Designation
-            </Label>
-            <Input
-              type="text"
-              value={designation}
-              disabled={!isEditing ? true : false}
-              onChange={(e) => setDesignation(e.target.value)}
-              className={cn(
-                "w-full border bg-gray-100/20",
-                !isEditing && "cursor-not-allowed border-none bg-gray-100"
-              )}
-            />
-          </div>
-          <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-            <Label
-              htmlFor="account_type"
-              className="w-full text-left text-sm font-medium"
-            >
-              Account Type
-            </Label>
-            <Input
-              type="text"
-              value={data?.account_type}
-              disabled={true}
-              className="w-full bg-gray-100 capitalize"
-            />
-          </div>
-          <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-            <Label
-              htmlFor="total_question"
-              className="w-full text-left text-sm font-medium"
-            >
-              Total Questions
-            </Label>
-            <Input
-              type="text"
-              value={data?.total_question}
-              disabled={true}
-              className="w-full bg-gray-100 capitalize"
-            />
-          </div>
-          <div className="col-span-1 flex w-full flex-col items-center justify-center gap-2">
-            <Label
-              htmlFor="total_lesson"
-              className="w-full text-left text-sm font-medium"
-            >
-              Total Lessons
-            </Label>
-            <Input
-              type="text"
-              value={data?.total_lesson}
-              disabled={true}
-              className="w-full bg-gray-100 capitalize"
-            />
+          <div className="grid aspect-square grid-cols-2 gap-10">
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg bg-primary/5 p-10">
+              <h1 className="text-6xl font-extrabold text-primary">
+                {stats?.total_lessons}
+              </h1>
+              <p className="text-primary">Total Lessons</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg bg-primary/5 p-10">
+              <h1 className="text-6xl font-extrabold text-primary">
+                {stats?.published_lessons}
+              </h1>
+              <p className="text-primary">Published Lessons</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg bg-primary/5 p-10">
+              <h1 className="text-6xl font-extrabold text-primary">
+                {stats?.actual_questions}
+              </h1>
+              <p className="text-primary">Questions</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-3 rounded-lg bg-primary/5 p-10">
+              <h1 className="text-6xl font-extrabold text-primary">
+                {stats?.practice_questions}
+              </h1>
+              <p className="text-primary">Practice Problems</p>
+            </div>
           </div>
         </div>
       </div>

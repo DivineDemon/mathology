@@ -36,6 +36,7 @@ export const questionApi = api.injectEndpoints({
           course_id: number;
           lesson_id: number;
           skill_tags: string[];
+          image_url: string;
         };
       }) => ({
         url: "/questions/",
@@ -78,6 +79,7 @@ export const questionApi = api.injectEndpoints({
           course_id: number;
           lesson_id: number;
           skill_tags: string[];
+          image_url: string;
         };
       }) => ({
         url: `/questions/${id}`,

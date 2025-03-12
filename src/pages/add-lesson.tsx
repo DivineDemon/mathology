@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
-import { extractPdfText, parseImage } from "@/lib/utils";
+import { cn, extractPdfText, parseImage } from "@/lib/utils";
 import { useGetAllCoursesQuery } from "@/store/services/course";
 import {
   useGetLessonQuery,
@@ -65,10 +65,11 @@ const lessonFormSchema = z.object({
 
   lesson: z
     .string()
-    .min(1, "Lesson is required")
+    .min(1, "Lesson Title is Required")
+    .max(100, "Maximum 100 characters allowed")
     .regex(/^[A-Za-z0-9\s]+$/, "Lesson can only contain letters and numbers")
     .refine((val) => !onlyNumbersRegex.test(val), {
-      message: "Lesson cannot be only numbers",
+      message: "Lesson Title is Required",
     }),
 
   skill_tags: z
@@ -78,11 +79,12 @@ const lessonFormSchema = z.object({
         value: z.string(),
       })
     )
-    .min(1, { message: "At least one skill tag is required" }),
+    .min(3, { message: "Minimum 3 tags allowed." }),
 
   lesson_description: z
     .string()
     .min(1, "Lesson description is required")
+    .max(250, "The description length exceeds the length of 250 characters")
     .refine((val) => !onlyNumbersRegex.test(val), {
       message: "Lesson description cannot be only numbers",
     }),
@@ -90,13 +92,14 @@ const lessonFormSchema = z.object({
 
 const AddLesson = () => {
   const { id } = useParams();
-  const { getToken } = useKindeAuth();
   const navigate = useNavigate();
+  const { getToken } = useKindeAuth();
   const lRef = useRef<HTMLInputElement>(null);
   const lhRef = useRef<HTMLInputElement>(null);
   const [token, setToken] = useState<string>("");
   const [lesson, setLesson] = useState<string>("");
   const [preview, setPreview] = useState<boolean>(false);
+  const [isDraft, setIsDraft] = useState<boolean>(false);
   const [lessonHeader, setLessonHeader] = useState<string>("");
   const [currentSkill, setCurrentSkill] = useState<string>("");
   const [lessonFileName, setLessonFileName] = useState<string>("");
@@ -259,6 +262,7 @@ const AddLesson = () => {
         )[0].standard_id
       ),
       skill_tags: values.skill_tags.map((tag) => tag.value),
+      is_published: !isDraft,
     };
 
     try {
@@ -303,6 +307,9 @@ const AddLesson = () => {
       form.setValue("lesson", data.lesson_title);
       form.setValue("lesson_description", data.lesson_description);
 
+      setLesson(data.lesson_file);
+      setLessonHeader(data.lesson_header);
+
       const skills = data?.skill_tags.map((skill) => {
         return {
           id: "",
@@ -327,7 +334,7 @@ const AddLesson = () => {
           <div className="flex items-center justify-center gap-4">
             <SidebarTrigger className="block lg:hidden" />
             <div className="text-3xl font-bold lg:text-4xl">
-              {id ? "Edit" : "Add"} Lesson
+              {id ? "Edit" : "Create"} Lesson
             </div>
           </div>
         </nav>
@@ -361,14 +368,19 @@ const AddLesson = () => {
                   name="standard"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Standard</FormLabel>
+                      <FormLabel className="text-black">Standard</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Standard" />
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.standard,
+                            })}
+                          >
+                            <SelectValue placeholder="Select Standard" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -392,13 +404,18 @@ const AddLesson = () => {
                   name="course"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Course</FormLabel>
+                      <FormLabel className="text-black">Course</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.course,
+                            })}
+                          >
                             <SelectValue placeholder="Course" />
                           </SelectTrigger>
                         </FormControl>
@@ -423,8 +440,15 @@ const AddLesson = () => {
                   name="lesson"
                   render={({ field }) => (
                     <FormItem className="col-span-2 w-full">
-                      <FormLabel>Lesson</FormLabel>
-                      <Input placeholder="Lesson" {...field} />
+                      <FormLabel className="text-black">Lesson</FormLabel>
+                      <Input
+                        placeholder="Lesson"
+                        className={cn("", {
+                          "border border-red-500 bg-red-500/10":
+                            form.formState.errors.lesson,
+                        })}
+                        {...field}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -435,14 +459,17 @@ const AddLesson = () => {
                     name="skill_tags"
                     render={() => (
                       <FormItem className="col-span-4 w-full">
-                        <FormLabel>Skill Tags</FormLabel>
+                        <FormLabel className="text-black">Skill Tags</FormLabel>
                         <FormControl>
                           <div className="flex w-full items-center justify-center gap-5">
                             <Input
                               placeholder="Geometry"
                               value={currentSkill}
                               onChange={(e) => setCurrentSkill(e.target.value)}
-                              className="flex-1"
+                              className={cn("flex-1", {
+                                "border border-red-500 bg-red-500/10":
+                                  form.formState.errors.standard,
+                              })}
                             />
                             <Button
                               onClick={addSkills}
@@ -479,126 +506,156 @@ const AddLesson = () => {
                   name="lesson_description"
                   render={({ field }) => (
                     <FormItem className="col-span-4 w-full">
-                      <FormLabel>Lesson Description</FormLabel>
+                      <FormLabel className="text-black">
+                        Lesson Description
+                      </FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Lesson Description" {...field} />
+                        <Textarea
+                          placeholder="Lesson Description"
+                          className={cn("", {
+                            "border border-red-500 bg-red-500/10":
+                              form.formState.errors.lesson_description,
+                          })}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="col-span-4 flex h-full w-full items-center justify-center gap-5 rounded-lg bg-white px-5 py-[110px] lg:gap-10 lg:p-[65px]">
-                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100 px-4 py-4 lg:w-96 lg:px-10">
-                    {id && (
-                      <div
-                        onClick={() => {
-                          setModalType("image");
-                          setPreview(true);
-                        }}
-                        className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
-                      >
-                        <span className="text-sm">
-                          <Info />
-                        </span>
-                      </div>
-                    )}
-                    <div
-                      className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100"
-                      onClick={() => toggleInput("lh")}
-                    >
-                      <input
-                        type="file"
-                        className="hidden"
-                        ref={lhRef}
-                        multiple={false}
-                        onChange={(e) => handleUpload(e, "lh")}
-                        accept="image/png, image/jpg, image/jpeg"
-                      />
-                      {lessonHeader ? (
-                        <span>
-                          <CircleCheckBig className="size-8 text-primary" />
-                        </span>
-                      ) : (
-                        <span>
-                          <CloudUpload className="size-8 text-primary" />
-                        </span>
+                <div className="col-span-4 flex w-full flex-col items-center justify-center gap-5 rounded-lg bg-white px-5 py-[90px] lg:gap-10 lg:p-[65px]">
+                  <div className="flex w-full items-center justify-center gap-5">
+                    <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100 px-4 py-4 lg:w-96 lg:px-10">
+                      {id && (
+                        <div
+                          onClick={() => {
+                            setModalType("image");
+                            setPreview(true);
+                          }}
+                          className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
+                        >
+                          <span className="text-sm">
+                            <Info />
+                          </span>
+                        </div>
                       )}
+                      <div
+                        className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100"
+                        onClick={() => toggleInput("lh")}
+                      >
+                        <input
+                          type="file"
+                          className="hidden"
+                          ref={lhRef}
+                          multiple={false}
+                          onChange={(e) => handleUpload(e, "lh")}
+                          accept="image/png, image/jpg, image/jpeg"
+                        />
+                        {lessonHeader ? (
+                          <span>
+                            <CircleCheckBig className="size-8 text-primary" />
+                          </span>
+                        ) : (
+                          <span>
+                            <CloudUpload className="size-8 text-primary" />
+                          </span>
+                        )}
 
-                      <div className="flex w-full flex-col items-center justify-center">
-                        <span className="w-full text-left font-medium">
-                          {lessonHeader
-                            ? "File Uploaded"
-                            : "Upload Lesson Header"}
-                        </span>
-                        <span className="line-clamp-1 w-full text-left text-xs text-gray-400">
-                          {lessonHeader
-                            ? lessonHeader
-                            : "Supported formats: .png, .jpg, .jpeg"}
-                        </span>
+                        <div className="flex w-full flex-col items-center justify-center">
+                          <span className="w-full text-left font-medium">
+                            {lessonHeader
+                              ? "File Uploaded"
+                              : "Upload Lesson Header"}
+                          </span>
+                          <span className="line-clamp-1 w-full text-left text-xs text-gray-400">
+                            {lessonHeader
+                              ? lessonHeader
+                              : "Supported formats: .png, .jpg, .jpeg"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10">
+                      {id && (
+                        <div
+                          onClick={() => {
+                            setModalType("text");
+                            setPreview(true);
+                          }}
+                          className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
+                        >
+                          <span className="text-sm text-black">
+                            <Info />
+                          </span>
+                        </div>
+                      )}
+                      <div
+                        className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-transparent text-white"
+                        onClick={() => toggleInput("l")}
+                      >
+                        <input
+                          type="file"
+                          className="hidden"
+                          ref={lRef}
+                          multiple={false}
+                          onChange={(e) => handleUpload(e, "l")}
+                          accept="application/pdf"
+                        />
+                        {lessonFileName ? (
+                          <span>
+                            <CircleCheckBig className="size-8" />
+                          </span>
+                        ) : (
+                          <span>
+                            <CloudUpload className="size-8" />
+                          </span>
+                        )}
+
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="w-full text-left font-medium">
+                            {lessonFileName ? "File Uploaded" : "Upload Lesson"}
+                          </span>
+                          <span className="line-clamp-1 w-full text-left text-xs text-white/80">
+                            {lessonFileName
+                              ? lessonFileName
+                              : "Supported formats: .pdf"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10">
-                    {id && (
-                      <div
-                        onClick={() => {
-                          setModalType("text");
-                          setPreview(true);
-                        }}
-                        className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
-                      >
-                        <span className="text-sm text-black">
-                          <Info />
-                        </span>
-                      </div>
-                    )}
-                    <div
-                      className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary text-white"
-                      onClick={() => toggleInput("l")}
-                    >
-                      <input
-                        type="file"
-                        className="hidden"
-                        ref={lRef}
-                        multiple={false}
-                        onChange={(e) => handleUpload(e, "l")}
-                        accept="application/pdf"
-                      />
-                      {lessonFileName ? (
-                        <span>
-                          <CircleCheckBig className="size-8" />
-                        </span>
-                      ) : (
-                        <span>
-                          <CloudUpload className="size-8" />
-                        </span>
-                      )}
-
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="w-full text-left font-medium">
-                          {lessonFileName ? "File Uploaded" : "Upload Lesson"}
-                        </span>
-                        <span className="line-clamp-1 w-full text-left text-xs text-white/80">
-                          {lessonFileName
-                            ? lessonFileName
-                            : "Supported formats: .pdf"}
-                        </span>
-                      </div>
+                  {lesson && (
+                    <div className="h-3 w-2/3 overflow-hidden rounded-full bg-gray-100">
+                      <div className="mr-auto h-full animate-progress rounded-full bg-primary" />
                     </div>
-                  </div>
+                  )}
                 </div>
-                <div className="col-span-4 flex w-full cursor-pointer items-end justify-end pb-5">
+                <div className="col-span-4 flex w-full cursor-pointer items-end justify-end gap-2 pb-5">
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    onClick={() => setIsDraft(false)}
+                    className="w-fit"
+                    disabled={posting || updating}
+                  >
+                    {posting || updating ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      "Draft"
+                    )}
+                  </Button>
                   <Button
                     type="submit"
                     variant="default"
+                    onClick={() => setIsDraft(true)}
                     className="w-fit text-white"
                     disabled={posting || updating}
                   >
                     {posting || updating ? (
                       <Loader2 className="animate-spin" />
                     ) : (
-                      "Submit"
+                      "Publish"
                     )}
                   </Button>
                 </div>

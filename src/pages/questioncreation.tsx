@@ -2,6 +2,8 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
+import Controlled from "@uiw/react-codemirror";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { CircleCheckBig, CloudUpload, Info, Loader2, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,6 +30,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -37,7 +40,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
-import { extractPdfText } from "@/lib/utils";
+import { cn, extractPdfText, parseImage, truncateString } from "@/lib/utils";
 import { useGetAllCoursesQuery } from "@/store/services/course";
 import { useGetAllLessonsQuery } from "@/store/services/lesson";
 import {
@@ -46,6 +49,10 @@ import {
   useUpdateQuestionMutation,
 } from "@/store/services/question";
 import { useGetAllStandardsQuery } from "@/store/services/standard";
+
+const config = {
+  loader: { load: ["input/asciimath", "output/chtml"] },
+};
 
 const questionFormSchema = z.object({
   standard: z.string().min(1, "Standard is required"),
@@ -63,20 +70,29 @@ const questionFormSchema = z.object({
         value: z.string(),
       })
     )
-    .min(1, { message: "At least one skill tag is required" }),
-  question_title: z.string().min(1, "Question title is required"),
-  question_description: z.string().min(1, "Question description is required"),
+    .min(3, { message: "Minimum 3 tags allowed." }),
+  question_title: z
+    .string()
+    .min(1, "Question title is required")
+    .max(100, "Question title must be 100 characters or fewer."),
+  question_description: z
+    .string()
+    .min(1, "Question description is required")
+    .max(250, "Maximum 250 characters allowed."),
   question_type: z.enum(["Practice", "Actual"], {
     errorMap: () => ({
       message: "Please select a question type: Practice or Actual",
     }),
   }),
-  answer_type: z.enum(["Short Answer", "MCQs", "Long Answer"], {
+  answer_type: z.enum(["Short Answer", "Long Answer"], {
     errorMap: () => ({
-      message: "Please select an answer type: Short, MCQ, or Long",
+      message: "Please select an answer type: Short or Long",
     }),
   }),
-  answer: z.string().optional(),
+  answer: z
+    .string()
+    .min(1, "Answer is required")
+    .max(50, "Enforce a character limit (e.g., 50 characters)."),
 });
 
 const AddTopic = () => {
@@ -84,11 +100,14 @@ const AddTopic = () => {
   const navigate = useNavigate();
   const { getToken } = useKindeAuth();
   const lRef = useRef<HTMLInputElement>(null);
+  const lhRef = useRef<HTMLInputElement>(null);
   const [token, setToken] = useState<string>("");
   const [lesson, setLesson] = useState<string>("");
+  const [qImage, setQImage] = useState<string>("");
   const [preview, setPreview] = useState<boolean>(false);
   const [currentSkill, setCurrentSkill] = useState<string>("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [modalType, setModalType] = useState<"image" | "text">("image");
   const [postQuestion, { isLoading: posting }] = usePostQuestionMutation();
   const [updateQuestion, { isLoading: updating }] = useUpdateQuestionMutation();
 
@@ -192,19 +211,56 @@ const AddTopic = () => {
     setCurrentSkill("");
   };
 
-  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setFileName(file.name);
-
-      const pdfText = await extractPdfText(file);
-      setLesson(pdfText);
+  const toggleInput = (toToggle: string) => {
+    if (toToggle === "lh") {
+      if (lhRef.current) {
+        lhRef.current.click();
+      }
+    } else {
+      console.log(toToggle);
+      if (lRef.current) {
+        lRef.current.click();
+      }
     }
   };
 
-  const toggleInput = () => {
-    if (lRef.current) {
-      lRef.current.click();
+  const handleUpload = async (
+    e: ChangeEvent<HTMLInputElement>,
+    type: string
+  ) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      if (type === "lh") {
+        if (file.type.startsWith("image/")) {
+          const imageUrl = await parseImage(file);
+          setQImage(imageUrl as string);
+        } else {
+          toast.custom(() => (
+            <CustomToast
+              type="error"
+              title="Error"
+              description="Please upload a valid image file (png, jpg, jpeg)."
+            />
+          ));
+        }
+      }
+
+      if (type === "l") {
+        if (file.type === "application/pdf") {
+          const pdfText = await extractPdfText(file);
+          setLesson(pdfText);
+          setFileName(file.name);
+        } else {
+          toast.custom(() => (
+            <CustomToast
+              type="error"
+              title="Error"
+              description="Please upload a valid PDF file."
+            />
+          ));
+        }
+      }
     }
   };
 
@@ -231,6 +287,7 @@ const AddTopic = () => {
       ),
       skill_tags: values.skill_tags.map((tag) => tag.value),
       answer_type: values.answer_type,
+      image_url: qImage,
     };
 
     try {
@@ -268,6 +325,8 @@ const AddTopic = () => {
       ));
     }
   };
+
+  const questionDescription = form.watch("question_description");
 
   useEffect(() => {
     handleToken();
@@ -307,7 +366,9 @@ const AddTopic = () => {
         open={preview}
         setOpen={setPreview}
         text={data?.solution_file}
-        type="text"
+        // @ts-ignore
+        image={data?.image_url}
+        type={modalType}
       />
       <div className="flex h-screen w-full flex-col items-start justify-start overflow-y-auto">
         <nav className="flex h-16 w-full items-center justify-between border-b p-5">
@@ -352,21 +413,26 @@ const AddTopic = () => {
                   name="standard"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Standard</FormLabel>
+                      <FormLabel className="text-black">Standard</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.standard,
+                            })}
+                          >
                             <SelectValue placeholder="Standard" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {/* @ts-ignore */}
-                          {standards?.map((standard: Standard) => (
+                          {standards?.map((standard: Standard, idx) => (
                             <SelectItem
-                              key={standard.standard_id}
+                              key={idx}
                               value={standard.standard_title}
                             >
                               {standard.standard_title}
@@ -383,23 +449,25 @@ const AddTopic = () => {
                   name="course"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Course</FormLabel>
+                      <FormLabel className="text-black">Course</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.course,
+                            })}
+                          >
                             <SelectValue placeholder="Course" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {/* @ts-ignore */}
-                          {courses?.map((course: Course) => (
-                            <SelectItem
-                              key={course.course_id}
-                              value={course.course_title}
-                            >
+                          {courses?.map((course: Course, idx) => (
+                            <SelectItem key={idx} value={course.course_title}>
                               {course.course_title}
                             </SelectItem>
                           ))}
@@ -409,39 +477,30 @@ const AddTopic = () => {
                     </FormItem>
                   )}
                 />
-                {/* <FormField
-                control={form.control}
-                name="lesson"
-                render={({ field }) => (
-                  <FormItem className="col-span-2 w-full">
-                    <FormLabel>Lesson</FormLabel>
-                    <Input placeholder="Lesson Name" {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
                 <FormField
                   control={form.control}
                   name="lesson"
                   render={({ field }) => (
                     <FormItem className="col-span-2 w-full">
-                      <FormLabel>Lesson</FormLabel>
+                      <FormLabel className="text-black">Lesson</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.lesson,
+                            })}
+                          >
                             <SelectValue placeholder="Lesson" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {/* @ts-ignore */}
-                          {lessons?.map((lesson: Lesson) => (
-                            <SelectItem
-                              key={lesson.lesson_id}
-                              value={lesson.lesson_title}
-                            >
+                          {lessons?.map((lesson: Lesson, idx) => (
+                            <SelectItem key={idx} value={lesson.lesson_title}>
                               {lesson.lesson_title}
                             </SelectItem>
                           ))}
@@ -456,13 +515,20 @@ const AddTopic = () => {
                   name="difficulty_level"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Difficulty Level</FormLabel>
+                      <FormLabel className="text-black">
+                        Difficulty Level
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.difficulty_level,
+                            })}
+                          >
                             <SelectValue placeholder="Difficulty Level" />
                           </SelectTrigger>
                         </FormControl>
@@ -482,14 +548,17 @@ const AddTopic = () => {
                     name="skill_tags"
                     render={() => (
                       <FormItem className="col-span-3 w-full">
-                        <FormLabel>Skill Tags</FormLabel>
+                        <FormLabel className="text-black">Skill Tags</FormLabel>
                         <FormControl>
                           <div className="flex w-full items-center justify-center gap-5">
                             <Input
                               placeholder="Geometry"
                               value={currentSkill}
                               onChange={(e) => setCurrentSkill(e.target.value)}
-                              className="flex-1"
+                              className={cn("flex-1", {
+                                "border border-red-500 bg-red-500/10":
+                                  form.formState.errors.skill_tags,
+                              })}
                             />
                             <Button
                               onClick={addSkills}
@@ -528,45 +597,87 @@ const AddTopic = () => {
                   name="question_title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Question Title</FormLabel>
+                      <FormLabel className="text-black">
+                        Question Title
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Question Title" {...field} />
+                        <Input
+                          placeholder="Question Title"
+                          className={cn("", {
+                            "border border-red-500 bg-red-500/10":
+                              form.formState.errors.question_title,
+                          })}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="question_description"
-                  render={({ field }) => (
-                    <FormItem className="col-span-3 w-full">
-                      <FormLabel>Question Description</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Question Description" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="col-span-4 grid w-full grid-cols-2 gap-5">
+                  <FormField
+                    control={form.control}
+                    name="question_description"
+                    render={({ field }) => (
+                      <FormItem className="font-code col-span-1 w-full">
+                        <FormLabel className="text-black">
+                          Question Description
+                        </FormLabel>
+                        <FormControl>
+                          <Controlled
+                            value={field.value}
+                            height="200px"
+                            onChange={field.onChange}
+                            basicSetup={{ lineNumbers: true }}
+                            className={cn(
+                              "overflow-hidden rounded-lg border bg-white text-xs",
+                              {
+                                "border border-red-500 bg-red-500/10":
+                                  form.formState.errors.question_title,
+                              }
+                            )}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="col-span-1 flex h-full w-full flex-col items-center justify-center gap-3">
+                    <Label className="mt-2 w-full text-left">
+                      Description Preview
+                    </Label>
+                    <div className="h-full w-full rounded-lg bg-white px-2">
+                      <MathJaxContext config={config}>
+                        <MathJax>{`\\(${questionDescription}\\)`}</MathJax>
+                      </MathJaxContext>
+                    </div>
+                  </div>
+                </div>
                 <FormField
                   control={form.control}
                   name="question_type"
                   render={({ field }) => (
                     <FormItem className="col-span-2 w-full">
-                      <FormLabel>Question Type</FormLabel>
+                      <FormLabel className="text-black">
+                        Question Type
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.question_type,
+                            })}
+                          >
                             <SelectValue placeholder="Question Type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="Practice">Practice</SelectItem>
-                          <SelectItem value="Actual">Actual</SelectItem>
+                          <SelectItem value="Actual">Question</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -578,13 +689,18 @@ const AddTopic = () => {
                   name="answer_type"
                   render={({ field }) => (
                     <FormItem className="col-span-2 w-full">
-                      <FormLabel>Answer Type</FormLabel>
+                      <FormLabel className="text-black">Answer Type</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value || "Short Answer"}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            className={cn("", {
+                              "border border-red-500 bg-red-500/10":
+                                form.formState.errors.answer_type,
+                            })}
+                          >
                             <SelectValue placeholder="Select an answer type" />
                           </SelectTrigger>
                         </FormControl>
@@ -606,11 +722,14 @@ const AddTopic = () => {
                   name="answer"
                   render={({ field }) => (
                     <FormItem className="col-span-4 w-full">
-                      <FormLabel>Answers</FormLabel>
+                      <FormLabel className="text-black">Answers</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder={"Please Enter Your Answer Here."}
-                          className="flex-1"
+                          placeholder="Please Enter Your Answer Here."
+                          className={cn("flex-1", {
+                            "border border-red-500 bg-red-500/10":
+                              form.formState.errors.answer,
+                          })}
                           {...field}
                         />
                       </FormControl>
@@ -622,7 +741,10 @@ const AddTopic = () => {
                   <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10">
                     {id && (
                       <div
-                        onClick={() => setPreview(true)}
+                        onClick={() => {
+                          setModalType("text");
+                          setPreview(true);
+                        }}
                         className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
                       >
                         <span className="text-sm">
@@ -631,15 +753,15 @@ const AddTopic = () => {
                       </div>
                     )}
                     <div
-                      onClick={toggleInput}
-                      className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary text-white"
+                      onClick={() => toggleInput("l")}
+                      className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-transparent text-white"
                     >
                       <input
                         type="file"
                         className="hidden"
                         ref={lRef}
                         multiple={false}
-                        onChange={(e) => handleUpload(e)}
+                        onChange={(e) => handleUpload(e, "l")}
                         accept="application/pdf"
                       />
                       {fileName ? (
@@ -658,6 +780,57 @@ const AddTopic = () => {
                         </span>
                         <span className="w-full text-left text-xs text-white/80">
                           {fileName ? fileName : "Supported formats: .pdf"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-gray-100 px-4 py-4 text-black lg:w-96 lg:px-10">
+                    {id && (
+                      <div
+                        onClick={() => {
+                          setModalType("image");
+                          setPreview(true);
+                        }}
+                        className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full border bg-white p-1 shadow-md transition-colors hover:bg-primary/20"
+                      >
+                        <span className="text-sm">
+                          <Info className="text-black" />
+                        </span>
+                      </div>
+                    )}
+                    <div
+                      onClick={() => toggleInput("lh")}
+                      className="flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-transparent"
+                    >
+                      <input
+                        type="file"
+                        className="hidden"
+                        ref={lhRef}
+                        multiple={false}
+                        onChange={(e) => handleUpload(e, "lh")}
+                        accept="image/png, image/jpg, image/jpeg"
+                      />
+                      {qImage ? (
+                        <span>
+                          <CircleCheckBig className="size-8 text-primary" />
+                        </span>
+                      ) : (
+                        <span>
+                          <CloudUpload className="size-8 text-primary" />
+                        </span>
+                      )}
+
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="w-full text-left font-medium">
+                          {qImage ? "File Uploaded" : "Upload Question Image"}
+                          <span className="ml-1 text-xs text-gray-400">
+                            (Optional)
+                          </span>
+                        </span>
+                        <span className="w-full text-left text-xs text-gray-400">
+                          {qImage
+                            ? truncateString(qImage, 30)
+                            : "Supported formats: .png, .jpg"}
                         </span>
                       </div>
                     </div>

@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  EllipsisVertical,
-  Loader2,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Loader2, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import NotFound from "@/components/not-found";
+import NotFound from "@/components/question-not";
 import { Button } from "@/components/ui/button";
 import CustomToast from "@/components/ui/custom-toast";
 import {
@@ -35,8 +30,7 @@ import {
 } from "@/store/services/question";
 import { useGetAllStandardsQuery } from "@/store/services/standard";
 
-import Delete from "../assets/img/delete.svg";
-import Edit from "../assets/img/edit-2.svg";
+import Edit from "../assets/img/edit.svg";
 import Sort from "../assets/img/sort.svg";
 
 const ITEMS_PER_PAGE = 10;
@@ -61,8 +55,7 @@ const PracticeProblem = () => {
     refetchOnMountOrArgChange: true,
   });
 
-  const [deleteQuestion, { isLoading: deletingloading }] =
-    useDeleteQuestionMutation();
+  const [deleteQuestion] = useDeleteQuestionMutation();
 
   const filteredData = data?.filter((q) => {
     return (
@@ -173,7 +166,7 @@ const PracticeProblem = () => {
 
   return (
     <div className="mx-auto flex h-full w-screen flex-col lg:w-full">
-      <nav className="flex h-16 w-full items-center shrink-0 justify-between border-b px-5 py-2.5">
+      <nav className="flex h-16 w-full shrink-0 items-center justify-between border-b px-5 py-2.5">
         <div className="flex items-center justify-center gap-4">
           <SidebarTrigger className="block lg:hidden" />
           <div className="text-3xl font-bold lg:text-4xl">Practice Problem</div>
@@ -281,7 +274,6 @@ const PracticeProblem = () => {
                           ? "bg-white dark:bg-gray-700"
                           : "bg-gray-100 dark:bg-gray-800"
                       }
-                      title={question.question_title}
                     >
                       <TableCell
                         className="overflow-hidden truncate font-medium hover:cursor-pointer hover:underline"
@@ -304,16 +296,24 @@ const PracticeProblem = () => {
                         {question.standard_title}
                       </TableCell>
 
-                      <TableCell
-                        className={cn("text-center font-semibold capitalize", {
-                          "text-green-500":
-                            question.difficulty_level === "easy",
-                          "text-blue-500":
-                            question.difficulty_level === "medium",
-                          "text-red-500": question.difficulty_level === "hard",
-                        })}
-                      >
-                        {question.difficulty_level}
+                      <TableCell>
+                        <div className="flex w-full items-center justify-center">
+                          <div
+                            className={cn(
+                              "w-fit text-center font-semibold capitalize",
+                              {
+                                "rounded-lg bg-green-200 px-2 py-0.5 text-green-700":
+                                  question.difficulty_level === "easy",
+                                "rounded-lg bg-[#FEEBC8] px-2 py-0.5 text-yellow-700":
+                                  question.difficulty_level === "medium",
+                                "rounded-lg bg-red-200 px-2 py-0.5 text-red-700":
+                                  question.difficulty_level === "hard",
+                              }
+                            )}
+                          >
+                            {question.difficulty_level}
+                          </div>
+                        </div>
                       </TableCell>
 
                       <TableCell
@@ -336,48 +336,22 @@ const PracticeProblem = () => {
                           ))}
                       </TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="focus:outline-none">
-                            <EllipsisVertical className="h-5 w-5 cursor-pointer" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              className="text-black"
-                              onClick={() =>
-                                navigate(
-                                  `/dashboard/editquestion/${question.question_id}`
-                                )
-                              }
-                            >
-                              <img
-                                src={Edit}
-                                alt="Edit"
-                                className="mr-2 size-5 invert"
-                              />
-                              &nbsp;
-                              <span className="flex-1 text-left text-black">
-                                Edit
-                              </span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(question.question_id)}
-                            >
-                              {deletingloading ? (
-                                <Loader2 className="animate-spin" />
-                              ) : (
-                                <>
-                                  <img
-                                    src={Delete}
-                                    alt="delete"
-                                    className="mr-2"
-                                  />
-                                  <span className="text-red-600">Delete</span>
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex gap-2">
+                          <Link
+                            to={`/dashboard/editquestion/${question.question_id}`}
+                            className="flex items-center"
+                          >
+                            <span className="flex size-8 items-center justify-center rounded-full bg-[#FEEBC8]">
+                              <img src={Edit} alt="Edit" className="size-4" />
+                            </span>
+                          </Link>
+                          <div
+                            className="flex size-8 items-center justify-center rounded-full bg-red-200 text-red-600"
+                            onClick={() => handleDelete(question.question_id)}
+                          >
+                            <Trash2 className="size-4" />
+                          </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

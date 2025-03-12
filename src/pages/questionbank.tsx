@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
-
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  EllipsisVertical,
-  Loader2,
-  Plus,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Plus, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-import NotFound from "@/components/not-found";
+import NotFound from "@/components/question-not";
 import { Button } from "@/components/ui/button";
 import CustomToast from "@/components/ui/custom-toast";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,24 +14,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import {
-  useDeleteQuestionMutation,
-  useGetAllQuestionsQuery,
-} from "@/store/services/question";
+import { useDeleteQuestionMutation, useGetAllQuestionsQuery } from "@/store/services/question";
 import { useGetAllStandardsQuery } from "@/store/services/standard";
-
-import Delete from "../assets/img/delete.svg";
-import Edit from "../assets/img/edit-2.svg";
+import Edit from "../assets/img/edit.svg";
 import Sort from "../assets/img/sort.svg";
+import Delete1 from "../assets/img/delete1.svg";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -47,49 +29,39 @@ const QuestionBank = () => {
   const { getToken } = useKindeAuth();
   const [token, setToken] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  // const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(
-    null
-  );
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
   const [selectedStandard, setSelectedStandard] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(null);
 
   const { data, isLoading } = useGetAllQuestionsQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
-
+  
   const { data: standards } = useGetAllStandardsQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
 
-  const [deleteQuestion, { isLoading: deletingloading }] =
-    useDeleteQuestionMutation();
+  const [deleteQuestion] = useDeleteQuestionMutation();
 
-  const handleDelete = async (id: number) => {
-    const response = await deleteQuestion({
-      id,
-      token,
-    });
+  const handleDeleteConfirm = async () => {
+    if (!selectedQuestionId) return;
+    const response = await deleteQuestion({ id: selectedQuestionId, token });
 
     if (response.data) {
       toast.custom(() => (
-        <CustomToast
-          type="success"
-          title="Success"
-          description="Question deleted successfully!"
-        />
+        <CustomToast type="success" title="Success" description="Question deleted successfully!" />
       ));
     } else {
       toast.custom(() => (
-        <CustomToast
-          type="error"
-          title="Error"
-          description="Something went wrong!"
-        />
+        <CustomToast type="error" title="Error" description="Something went wrong!" />
       ));
     }
+    setDeleteModalOpen(false);
   };
+
 
   // const uniqueStatuses = [...new Set(questiondata.map((q) => q.status))];
 
@@ -178,7 +150,7 @@ const QuestionBank = () => {
 
   return (
     <div className="mx-auto flex h-full w-screen flex-col lg:w-full">
-      <nav className="flex h-16 w-full items-center justify-between border-b px-5 py-2.5">
+      <nav className="flex h-16 w-full items-center justify-between border-b px-5 py-3">
         <div className="flex items-center justify-center gap-4">
           <SidebarTrigger className="block lg:hidden" />
           <div className="text-3xl font-bold lg:text-4xl">Question Bank</div>
@@ -296,7 +268,6 @@ const QuestionBank = () => {
                           ? "bg-white dark:bg-gray-700"
                           : "bg-gray-100 dark:bg-gray-800"
                       }
-                      title={question.question_title}
                     >
                       <TableCell className="overflow-hidden truncate font-medium">
                         {question.question_title}
@@ -314,16 +285,24 @@ const QuestionBank = () => {
                         {question.standard_title}
                       </TableCell>
 
-                      <TableCell
-                        className={cn("text-center font-semibold capitalize", {
-                          "text-green-500":
-                            question.difficulty_level === "easy",
-                          "text-blue-500":
-                            question.difficulty_level === "medium",
-                          "text-red-500": question.difficulty_level === "hard",
-                        })}
-                      >
-                        {question.difficulty_level}
+                      <TableCell>
+                        <div className="flex w-full items-center justify-center">
+                          <div
+                            className={cn(
+                              "w-fit text-center font-semibold capitalize",
+                              {
+                                "rounded-lg bg-green-200 px-2 py-0.5 text-green-700":
+                                  question.difficulty_level === "easy",
+                                "rounded-lg bg-[#FEEBC8] px-2 py-0.5 text-yellow-700":
+                                  question.difficulty_level === "medium",
+                                "rounded-lg bg-red-200 px-2 py-0.5 text-red-700":
+                                  question.difficulty_level === "hard",
+                              }
+                            )}
+                          >
+                            {question.difficulty_level}
+                          </div>
+                        </div>
                       </TableCell>
 
                       <TableCell
@@ -347,43 +326,25 @@ const QuestionBank = () => {
                       </TableCell>
 
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="focus:outline-none">
-                            <EllipsisVertical className="h-5 w-5 cursor-pointer" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link
-                                to={`/dashboard/editquestion/${question.question_id}`}
-                                className="flex items-center"
-                              >
-                                <img
-                                  src={Edit}
-                                  alt="Edit"
-                                  className="mr-2 size-5 invert"
-                                />
-                                &nbsp; Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(question.question_id)}
-                            >
-                              {deletingloading ? (
-                                <Loader2 className="animate-spin" />
-                              ) : (
-                                <>
-                                  <img
-                                    src={Delete}
-                                    alt="delete"
-                                    className="mr-2"
-                                  />
-                                  <span className="text-red-600">Delete</span>
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex gap-2">
+                          <Link
+                            to={`/dashboard/editquestion/${question.question_id}`}
+                            className="flex items-center"
+                          >
+                            <span className="flex size-8 items-center justify-center rounded-full bg-[#FEEBC8]">
+                              <img src={Edit} alt="Edit" className="size-4" />
+                            </span>
+                          </Link>
+                          <div
+                        className="cursor-pointer text-red-600 bg-red-100 flex justify-center items-center rounded-full size-8"
+                        onClick={() => {
+                          setSelectedQuestionId(question.question_id);
+                          setDeleteModalOpen(true);
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                      </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -427,6 +388,29 @@ const QuestionBank = () => {
           <NotFound />
         </div>
       )}
+       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+              <DialogContent className="px-16 py-14">
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <img src={Delete1} alt="" />
+                  <h1 className="text-2xl font-extrabold">Are you sure?</h1>
+                  <p className="text-center text-gray-400">
+                    Are you sure you want to delete this question.
+                  </p>
+                </div>
+                <div className="mt-4 flex w-full justify-center gap-2">
+                  <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteConfirm}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Loader2 className="animate-spin" /> : "Delete"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
     </div>
   );
 };

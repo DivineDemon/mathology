@@ -20,6 +20,8 @@ declare type Lesson = {
   created_at: string;
   deleted_at: string;
   skill_tags: string[];
+  status: string;
+  is_published: boolean | null;
 };
 
 declare type Standard = {
@@ -45,6 +47,7 @@ declare type Question = {
   course_title: string;
   standard_title: string;
   skill_tags: string[];
+  image_url: string | null;
 };
 
 declare type User = {
@@ -59,3 +62,4 @@ declare type User = {
   total_question?: number;
   total_lesson?: number;
 };
+

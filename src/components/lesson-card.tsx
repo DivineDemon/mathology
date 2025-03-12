@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { EllipsisVertical, Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { useDeleteLessonMutation } from "@/store/services/lesson";
 
-import Delete from "../assets/img/delete.svg";
-import Edit from "../assets/img/edit-2.svg";
+import Delete1 from "../assets/img/delete1.svg";
+import { Button } from "./ui/button";
 import CustomToast from "./ui/custom-toast";
+import { Dialog, DialogContent } from "./ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,13 +20,13 @@ import {
 } from "./ui/dropdown-menu";
 
 const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
+  const navigate = useNavigate();
   const [deleteLesson, { isLoading }] = useDeleteLessonMutation();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const handleDelete = async () => {
-    const response = await deleteLesson({
-      id: lesson.lesson_id,
-      token,
-    });
+    setShowConfirmModal(false);
+    const response = await deleteLesson({ id: lesson.lesson_id, token });
 
     if (response.data) {
       toast.custom(() => (
@@ -45,69 +48,123 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
   };
 
   return (
-    <Card className="w-full p-0">
-      <CardContent className="p-0">
-        <div className="relative flex w-full flex-col items-center justify-center gap-2.5 p-3.5">
-          <div className="absolute right-5 top-6 z-[1]">
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <EllipsisVertical className="text-primary" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="mr-20 w-24">
-                <DropdownMenuItem className="border-b">
-                  <Link
-                    to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
-                    className="flex items-center justify-center gap-3"
+    <>
+      <Card
+        className="w-full p-0 cursor-pointer"
+        onClick={() => navigate(`/practiceproblems/${lesson.lesson_id}`)}
+      >
+        <CardContent className="p-0">
+          <div
+            className={cn(
+              "relative flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl p-3.5",
+              { "border border-[#FF3D60]": lesson.is_published }
+            )}
+          >
+            <div className="absolute inset-x-0 top-5 z-[1] flex w-full items-center justify-center px-5">
+              {lesson.is_published && (
+                <span className="mr-auto rounded-full bg-[#FF3D60] px-3 py-1 text-xs text-white">
+                  Draft
+                </span>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className="ml-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <EllipsisVertical className="text-black bg-white bg-opacity-70 rounded-md" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-24" align="end">
+                  <DropdownMenuItem className="border-b">
+                    <Link
+                      to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
+                      className="flex items-center justify-start w-full"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Edit
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowConfirmModal(true);
+                    }}
+                    className="border-b cursor-pointer"
                   >
-                    <img src={Edit} alt="edit" className="size-5 invert" /> Edit
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete}>
-                  {isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <>
-                      <img src={Delete} alt="delete" className="mr-2" />{" "}
-                      <span className="text-red-600">Delete</span>
-                    </>
+                    <span className="text-red-600">Delete</span>
+                  </DropdownMenuItem>
+                  {lesson.is_published && (
+                    <DropdownMenuItem>
+                      <Link
+                        to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
+                        className="flex items-center justify-start w-full"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Publish
+                      </Link>
+                    </DropdownMenuItem>
                   )}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <img
-            src={lesson.lesson_header}
-            alt="geometry"
-            className="aspect-video w-full rounded-2xl object-cover"
-          />
-          <div className="flex w-full items-center justify-between">
-            <span className="text-sm font-semibold text-primary dark:text-gray-300">
-              {lesson.course_title}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <img
+              src={lesson.lesson_header}
+              alt="geometry"
+              className="aspect-video w-full rounded-2xl object-cover"
+            />
+            <div className="flex w-full items-center justify-between">
+              <span className="text-sm font-semibold text-primary dark:text-gray-300">
+                {lesson.course_title}
+              </span>
+              <span className="rounded-md bg-primary px-3 text-white">
+                {lesson.standard_title}
+              </span>
+            </div>
+            <span className="line-clamp-1 w-full pb-0.5 text-left text-xl font-bold !leading-[20px] text-black dark:text-gray-300">
+              {lesson.lesson_title}
             </span>
-            <span className="rounded-md bg-primary px-3 text-white">
-              {lesson.standard_title}
+            <span className="line-clamp-1 w-full text-left text-sm !leading-[16px] text-gray-500">
+              {lesson.lesson_description}
             </span>
+            <div className="flex w-full flex-wrap items-start justify-start gap-1.5 pb-1.5">
+              {lesson.skill_tags?.slice(0, 2).map((skill, idx) => (
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="bg-gray-100 lowercase text-gray-400 dark:bg-gray-600 dark:text-gray-300"
+                >
+                  {skill}
+                </Badge>
+              ))}
+            </div>
           </div>
-          <span className="line-clamp-1 w-full pb-0.5 text-left text-xl font-bold !leading-[20px] text-black dark:text-gray-300">
-            {lesson.lesson_title}
-          </span>
-          <span className="line-clamp-1 w-full text-left text-sm !leading-[16px] text-gray-500">
-            {lesson.lesson_description}
-          </span>
-          <div className="flex w-full flex-wrap items-start justify-start gap-1.5 pb-1.5">
-            {lesson.skill_tags?.slice(0, 2).map((skill, idx) => (
-              <Badge
-                key={idx}
-                variant="outline"
-                className="bg-gray-100 lowercase text-gray-400 dark:bg-gray-600 dark:text-gray-300"
-              >
-                {skill}
-              </Badge>
-            ))}
+        </CardContent>
+      </Card>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="px-16 py-14">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <img src={Delete1} alt="" />
+            <h1 className="text-2xl font-extrabold">Are you sure?</h1>
+            <p className="text-center text-gray-400">
+              Do you really want to delete these records? This process cannot be undone.
+            </p>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          <div className="mt-4 flex w-full justify-center gap-2">
+            <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="animate-spin" /> : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
