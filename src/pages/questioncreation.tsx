@@ -374,11 +374,21 @@ const AddTopic = () => {
   }, [getToken, data]);
 
   useEffect(() => {
-    // @ts-ignore
-    if (window.MathJax) {
+    const updateMathJax = async () => {
       // @ts-ignore
-      window.MathJax.typesetPromise();
-    }
+      if (typeof window !== "undefined" && window.MathJax) {
+        try {
+          // @ts-ignore
+          await window.MathJax.startup.promise;
+          // @ts-ignore
+          window.MathJax.typeset();
+        } catch (error) {
+          console.error("MathJax update failed:", error);
+        }
+      }
+    };
+
+    updateMathJax();
   }, [questionDescription]);
 
   return (
