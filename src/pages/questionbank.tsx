@@ -50,7 +50,7 @@ import Delete1 from "../assets/img/delete1.svg";
 // import { useGetAllStandardsQuery } from "@/store/services/standard";
 import Edit from "../assets/img/edit.svg";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const QuestionBank = () => {
   const navigate = useNavigate();
