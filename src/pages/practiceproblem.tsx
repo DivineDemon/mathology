@@ -5,11 +5,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-
   Search,
   Trash2,
 } from "lucide-react";
-import { Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import NotFound from "@/components/question-not";
@@ -53,7 +52,6 @@ import Edit from "../assets/img/edit.svg";
 const ITEMS_PER_PAGE = 8;
 
 const PracticeProblem = () => {
- 
   const { getToken } = useKindeAuth();
   const [token, setToken] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -135,7 +133,9 @@ const PracticeProblem = () => {
   //   );
   // });
 
-  const totalItems = questions?.filter(q => q.question_type === "Practice").length;
+  const totalItems = questions?.filter(
+    (q) => q.question_type === "Practice"
+  ).length;
   const totalPages = Math.ceil(totalItems! / ITEMS_PER_PAGE);
 
   const currentData = questions?.slice(

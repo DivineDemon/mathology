@@ -530,11 +530,16 @@ const AddTopic = () => {
                         </FormControl>
                         <SelectContent>
                           {/* @ts-ignore */}
-                          {lessons?.map((lesson: Lesson, idx) => (
-                            <SelectItem key={idx} value={lesson.lesson_title}>
-                              {lesson.lesson_title}
-                            </SelectItem>
-                          ))}
+                          {lessons
+                            ?.filter(
+                              (lesson: Lesson) =>
+                                lesson.standard_title === form.watch("standard")
+                            )
+                            .map((lesson: Lesson, idx) => (
+                              <SelectItem key={idx} value={lesson.lesson_title}>
+                                {lesson.lesson_title}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

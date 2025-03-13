@@ -135,7 +135,9 @@ const QuestionBank = () => {
   //   );
   // });
 
-  const totalItems = questions?.filter(q => q.question_type === "Actual").length;
+  const totalItems = questions?.filter(
+    (q) => q.question_type === "Actual"
+  ).length;
   const totalPages = Math.ceil(totalItems! / ITEMS_PER_PAGE);
 
   const currentData = questions?.slice(
@@ -298,7 +300,6 @@ const QuestionBank = () => {
                   <TableHead>Standard</TableHead>
                   <TableHead>Difficulty Level</TableHead>
 
-                  
                   <TableHead>Tags</TableHead>
 
                   <TableHead className="">Action</TableHead>
