@@ -379,7 +379,7 @@ const QuestionBank = () => {
 
                   <TableHead>Tags</TableHead>
 
-                  <TableHead>Action</TableHead>
+                  <TableHead className="">Action</TableHead>
                 </TableRow>
               </TableHeader>
 

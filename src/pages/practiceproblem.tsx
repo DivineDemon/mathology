@@ -231,6 +231,8 @@ const PracticeProblem = () => {
     handleFilter();
   }, [searchQuery, standardFilter, courseFilter, data]);
 
+  console.log(questions);
+
   return (
     <div className="mx-auto flex h-full w-screen flex-col lg:w-full">
       <nav className="flex h-16 w-full items-center justify-between border-b px-5 py-3">
@@ -295,7 +297,7 @@ const PracticeProblem = () => {
         </div>
       ) : //@ts-ignore
       data?.length > 0 &&
-        data?.filter((q) => q.question_type === "Actual").length !== 0 ? (
+        data?.filter((q) => q.question_type === "Practice").length !== 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>

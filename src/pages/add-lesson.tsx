@@ -261,6 +261,14 @@ const AddLesson = () => {
   };
 
   const handleSubmit = async (values: z.infer<typeof lessonFormSchema>) => {
+    if (!lessonHeader || lessonHeader === "") {
+      toast.custom(() => (
+        <CustomToast type="error" title="Error" description="Please upload a header image." />
+      ))
+
+      return;
+    }
+
     const newLesson = {
       lesson_title: values.lesson,
       lesson_description: values.lesson_description,
@@ -657,7 +665,7 @@ const AddLesson = () => {
                     className="w-fit"
                     disabled={posting || updating}
                   >
-                    {posting || updating ? (
+                    {(posting || updating) && !isDraft ? (
                       <Loader2 className="animate-spin" />
                     ) : (
                       "Draft"
@@ -670,7 +678,7 @@ const AddLesson = () => {
                     className="w-fit text-white"
                     disabled={posting || updating}
                   >
-                    {posting || updating ? (
+                    {(posting || updating) && isDraft ? (
                       <Loader2 className="animate-spin" />
                     ) : (
                       "Publish"
