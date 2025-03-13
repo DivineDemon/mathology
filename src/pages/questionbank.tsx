@@ -135,7 +135,7 @@ const QuestionBank = () => {
   //   );
   // });
 
-  const totalItems = questions?.length;
+  const totalItems = questions?.filter(q => q.question_type === "Actual").length;
   const totalPages = Math.ceil(totalItems! / ITEMS_PER_PAGE);
 
   const currentData = questions?.slice(
@@ -298,74 +298,7 @@ const QuestionBank = () => {
                   <TableHead>Standard</TableHead>
                   <TableHead>Difficulty Level</TableHead>
 
-                  {/* <TableHead>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            className="w-full"
-                            variant="ghost"
-                          >
-                            Standard <img src={Sort} className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-24">
-                          <DropdownMenuItem
-                            onClick={() => setSelectedStandard(null)}
-                          >
-                            All
-                          </DropdownMenuItem>
-                          {standards?.map((standard) => (
-                            <DropdownMenuItem
-                              key={standard.standard_id}
-                              onClick={() =>
-                                setSelectedStandard(standard.standard_title)
-                              }
-                            >
-                              {standard.standard_title}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableHead>
-
-                    <TableHead>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            className="w-full"
-                            type="button"
-                            variant="ghost"
-                          >
-                            Difficulty Level&nbsp;
-                            <img src={Sort} className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem
-                            onClick={() => setSelectedDifficulty(null)}
-                          >
-                            All
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setSelectedDifficulty("easy")}
-                          >
-                            Easy
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setSelectedDifficulty("medium")}
-                          >
-                            Medium
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setSelectedDifficulty("hard")}
-                          >
-                            Hard
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableHead> */}
-
+                  
                   <TableHead>Tags</TableHead>
 
                   <TableHead className="">Action</TableHead>
