@@ -236,7 +236,7 @@ const PracticeProblem = () => {
       <nav className="flex h-16 w-full items-center justify-between border-b px-5 py-3">
         <div className="flex items-center justify-center gap-4">
           <SidebarTrigger className="block lg:hidden" />
-          <div className="text-3xl font-bold lg:text-4xl">Question Bank</div>
+          <div className="text-3xl font-bold lg:text-4xl">Practice Problem</div>
         </div>
         <Button
           variant="default"
@@ -295,7 +295,7 @@ const PracticeProblem = () => {
         </div>
       ) : //@ts-ignore
       data?.length > 0 &&
-        data?.filter((q) => q.question_type === "Practice").length !== 0 ? (
+        data?.filter((q) => q.question_type === "Actual").length !== 0 ? (
         <div className="mx-auto flex h-full w-full flex-col justify-between gap-5 p-5">
           <div className="w-full">
             <Table>
@@ -385,7 +385,7 @@ const PracticeProblem = () => {
 
               <TableBody className={cn("text-md", "truncate text-ellipsis")}>
                 {currentData
-                  ?.filter((q) => q.question_type === "Actual")
+                  ?.filter((q) => q.question_type === "Practice")
                   .map((question, index) => (
                     <TableRow
                       key={index}
@@ -407,7 +407,7 @@ const PracticeProblem = () => {
                         {question.lesson_title}
                       </TableCell>
 
-                      <TableCell className="text-start">
+                      <TableCell className="text-start ">
                         {question.standard_title}
                       </TableCell>
 
