@@ -85,7 +85,7 @@ const lessonFormSchema = z.object({
   lesson_description: z
     .string()
     .min(1, "Lesson description is required")
-    .max(100, "The description length exceeds the length of 250 characters")
+    .max(100, "The description length exceeds the length of 100 characters")
     .refine((val) => !onlyNumbersRegex.test(val), {
       message: "Lesson description cannot be only numbers",
     }),
