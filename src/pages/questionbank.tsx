@@ -40,7 +40,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useGetAllCoursesQuery } from "@/store/services/course";
 import {
   useDeleteQuestionMutation,
   useGetAllQuestionsQuery,
@@ -62,7 +61,7 @@ const QuestionBank = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [standardFilter, setStandardFilter] = useState<string>("");
-  const [courseFilter, setCourseFilter] = useState<string>("");
+  const [levelFilter, setLevelFilter] = useState<string>("");
 
   // const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
   // const [selectedStandard, setSelectedStandard] = useState<string | null>(null);
@@ -72,16 +71,6 @@ const QuestionBank = () => {
   );
 
   const { data, isLoading } = useGetAllQuestionsQuery(`${token}`, {
-    skip: !token,
-    refetchOnMountOrArgChange: true,
-  });
-
-  // const { data: standards } = useGetAllStandardsQuery(`${token}`, {
-  //   skip: !token,
-  //   refetchOnMountOrArgChange: true,
-  // });
-
-  const { data: courses } = useGetAllCoursesQuery(`${token}`, {
     skip: !token,
     refetchOnMountOrArgChange: true,
   });
@@ -122,9 +111,9 @@ const QuestionBank = () => {
         (lesson) => lesson.standard_title === standardFilter
       );
     }
-    if (courseFilter && courseFilter !== "All") {
+    if (levelFilter && levelFilter !== "All") {
       filteredQuestions = filteredQuestions.filter(
-        (lesson) => lesson.course_title === courseFilter
+        (lesson) => lesson.difficulty_level === levelFilter
       );
     }
     if (searchQuery) {
@@ -229,7 +218,7 @@ const QuestionBank = () => {
 
   useEffect(() => {
     handleFilter();
-  }, [searchQuery, standardFilter, courseFilter, data]);
+  }, [searchQuery, standardFilter, levelFilter, data]);
 
   return (
     <div className="mx-auto flex h-full w-screen flex-col lg:w-full">
@@ -274,17 +263,17 @@ const QuestionBank = () => {
             </SelectContent>
           </Select>
 
-          <Select value={courseFilter} onValueChange={setCourseFilter}>
+          <Select value={levelFilter} onValueChange={setLevelFilter}>
             <SelectTrigger className="h-8 w-[140px] border-gray-300 font-light dark:border-gray-700">
-              <SelectValue placeholder="All Courses" />
+              <SelectValue placeholder="Difficulty Level" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Courses</SelectItem>
-              {courses?.map((course: Course, idx) => (
-                <SelectItem key={idx} value={course.course_title}>
-                  {course.course_title}
-                </SelectItem>
-              ))}
+              <SelectItem value="All" className="font-extralight">
+                All
+              </SelectItem>
+              <SelectItem value="easy">Easy</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="hard">Hard</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -407,7 +396,7 @@ const QuestionBank = () => {
                         {question.lesson_title}
                       </TableCell>
 
-                      <TableCell className="text-start ">
+                      <TableCell className="text-start">
                         {question.standard_title}
                       </TableCell>
 

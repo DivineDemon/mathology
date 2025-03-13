@@ -263,8 +263,12 @@ const AddLesson = () => {
   const handleSubmit = async (values: z.infer<typeof lessonFormSchema>) => {
     if (!lessonHeader || lessonHeader === "") {
       toast.custom(() => (
-        <CustomToast type="error" title="Error" description="Please upload a header image." />
-      ))
+        <CustomToast
+          type="error"
+          title="Error"
+          description="Please upload a header image."
+        />
+      ));
 
       return;
     }
