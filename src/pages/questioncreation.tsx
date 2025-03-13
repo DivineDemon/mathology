@@ -373,6 +373,24 @@ const AddTopic = () => {
     }
   }, [getToken, data]);
 
+  useEffect(() => {
+    const updateMathJax = async () => {
+      // @ts-ignore
+      if (typeof window !== "undefined" && window.MathJax) {
+        try {
+          // @ts-ignore
+          await window.MathJax.startup.promise;
+          // @ts-ignore
+          window.MathJax.typeset();
+        } catch (error) {
+          console.error("MathJax update failed:", error);
+        }
+      }
+    };
+
+    updateMathJax();
+  }, [questionDescription]);
+
   return (
     <>
       <AddLessonModal
