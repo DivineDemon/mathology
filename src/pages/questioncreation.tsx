@@ -284,7 +284,7 @@ const AddTopic = () => {
       status: "draft",
       difficulty_level: values.difficulty_level,
       question_type: values.question_type,
-      solution_file: lesson,
+      solution_file: `${values.answer},${lesson}`,
       course_id: Number(
         courses?.filter((course) => course.course_title === values.course)[0]
           .course_id
@@ -369,7 +369,7 @@ const AddTopic = () => {
         "answer_type",
         data?.answer_type as "Short Answer" | "Long Answer"
       );
-      form.setValue("answer", data?.solution_file);
+      form.setValue("answer", data?.solution_file.split(",")[0]);
     }
   }, [getToken, data]);
 
@@ -396,7 +396,7 @@ const AddTopic = () => {
       <AddLessonModal
         open={preview}
         setOpen={setPreview}
-        text={data?.solution_file}
+        text={data?.solution_file.split(",")[1]}
         // @ts-ignore
         image={data?.image_url}
         type={modalType}

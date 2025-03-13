@@ -227,7 +227,7 @@ const PracticeProblem = () => {
           <SidebarTrigger className="block lg:hidden" />
           <div className="text-3xl font-bold lg:text-4xl">Question Bank</div>
         </div>
-        <Button
+        {/* <Button
           variant="default"
           type="button"
           onClick={() => navigate("/questionbank/create-question")}
@@ -235,7 +235,7 @@ const PracticeProblem = () => {
         >
           <Plus />
           Create Question
-        </Button>
+        </Button> */}
       </nav>
       <div className="flex items-center justify-between px-5 py-5">
         <div className="flex w-1/3 items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-2 dark:border-gray-700 dark:bg-muted">
