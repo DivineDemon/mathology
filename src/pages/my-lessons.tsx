@@ -131,7 +131,7 @@ const MyLessons = () => {
           <Search className="size-5 text-primary dark:text-white" />
           <Input
             value={searchQuery}
-            placeholder="Search by Topic"
+            placeholder="Search by Lesson title"
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-8 border-none bg-transparent shadow-none"
           />

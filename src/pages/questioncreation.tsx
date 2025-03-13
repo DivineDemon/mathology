@@ -70,11 +70,11 @@ const questionFormSchema = z.object({
         value: z.string(),
       })
     )
-    .min(3, { message: "Minimum 3 tags allowed." }),
+    .min(2, { message: "Minimum 2 tags allowed." }),
   question_title: z
     .string()
-    .min(1, "Question title is required")
-    .max(100, "Question title must be 100 characters or fewer."),
+    .min(30, "Question title must be 30 characters ")
+    .max(45, "Question title max 45 characters ."),
   question_description: z
     .string()
     .min(1, "Question description is required")
