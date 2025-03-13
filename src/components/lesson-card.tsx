@@ -127,7 +127,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
               {lesson.lesson_description}
             </span>
             <div className="flex w-full flex-wrap items-start justify-start gap-1.5 pb-1.5">
-              {lesson.skill_tags?.slice(0, 2).map((skill, idx) => (
+              {lesson.skill_tags?.slice(0, 3).map((skill, idx) => (
                 <Badge
                   key={idx}
                   variant="outline"

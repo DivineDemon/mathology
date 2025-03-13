@@ -407,12 +407,12 @@ const PracticeProblem = () => {
                         {question.lesson_title}
                       </TableCell>
 
-                      <TableCell className="text-center">
+                      <TableCell className="text-start">
                         {question.standard_title}
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex w-full items-center justify-center">
+                        <div className="flex w-full items-center justify-start">
                           <div
                             className={cn(
                               "w-fit text-center font-semibold capitalize",
