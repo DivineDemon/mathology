@@ -600,6 +600,7 @@ const AddTopic = () => {
                               onClick={addSkills}
                               type="button"
                               variant="default"
+                              className="hover:bg-primary/80"
                             >
                               Add
                             </Button>
@@ -778,7 +779,7 @@ const AddTopic = () => {
                   )}
                 />
                 <div className="col-span-4 flex h-full w-full items-center justify-center gap-5 rounded-lg bg-white px-5 py-[110px] lg:gap-10 lg:p-[110px]">
-                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10">
+                  <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white hover:bg-primary/80 lg:w-96 lg:px-10">
                     {id && (
                       <div
                         onClick={() => {
@@ -881,7 +882,7 @@ const AddTopic = () => {
                     type="submit"
                     variant="default"
                     disabled={posting || updating}
-                    className="w-fit text-white"
+                    className="w-fit text-white hover:bg-primary/80"
                   >
                     {posting || updating ? (
                       <Loader2 className="animate-spin" />

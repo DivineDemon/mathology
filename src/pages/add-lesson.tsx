@@ -501,6 +501,7 @@ const AddLesson = () => {
                               onClick={addSkills}
                               type="button"
                               variant="default"
+                              className="hover:bg-primary/80"
                             >
                               Add
                             </Button>
@@ -606,7 +607,7 @@ const AddLesson = () => {
                       </div>
                     </div>
 
-                    <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white lg:w-96 lg:px-10">
+                    <div className="relative flex w-full cursor-pointer items-center justify-center gap-5 rounded-lg bg-primary px-4 py-4 text-white hover:bg-primary/80 lg:w-96 lg:px-10">
                       {id && (
                         <div
                           onClick={() => {
@@ -679,7 +680,7 @@ const AddLesson = () => {
                     type="submit"
                     variant="default"
                     onClick={() => setIsDraft(true)}
-                    className="w-fit text-white"
+                    className="w-fit text-white hover:bg-primary/80"
                     disabled={posting || updating}
                   >
                     {(posting || updating) && isDraft ? (

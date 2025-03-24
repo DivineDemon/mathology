@@ -233,7 +233,7 @@ const QuestionBank = () => {
           variant="default"
           type="button"
           onClick={() => navigate("/questionbank/create-question")}
-          className="font-semibold text-white"
+          className="font-semibold text-white hover:bg-primary/80"
         >
           <Plus />
           Create Question

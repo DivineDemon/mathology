@@ -17,7 +17,7 @@ const CreateFirstLesson = () => {
         </span>
       </div>
       <Button
-        className="mx-10 w-full"
+        className="mx-10 w-full hover:bg-primary/80"
         onClick={() => navigate("/dashboard/add-lesson")}
       >
         <Plus className="mr-2 h-4 w-4" /> Create New Lesson

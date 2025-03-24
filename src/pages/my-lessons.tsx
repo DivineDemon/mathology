@@ -119,7 +119,7 @@ const MyLessons = () => {
         </div>
         <div
           onClick={() => navigate("/dashboard/add-lesson")}
-          className="flex cursor-pointer items-center justify-center gap-1.5 rounded-md bg-primary p-2 text-sm text-white"
+          className="flex cursor-pointer items-center justify-center gap-1.5 rounded-md bg-primary p-2 text-sm text-white hover:bg-primary/80"
         >
           <Plus className="size-4" />
           Create New Lesson

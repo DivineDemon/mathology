@@ -165,7 +165,11 @@ const Profile = () => {
                   className="w-full bg-gray-100"
                 />
               </div>
-              <Button type="submit" className="text-sm" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="text-sm hover:bg-primary/80"
+                disabled={isLoading}
+              >
                 {isLoading ? <Loader2 className="animate-spin" /> : "Save"}
               </Button>
             </form>
