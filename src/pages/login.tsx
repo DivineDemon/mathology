@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { useNavigate } from "react-router-dom";
-
+import Logo from "@/assets/img/matholody_logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,9 +37,7 @@ const Login = () => {
   return (
     <div className="flex h-screen w-full flex-col items-center justify-end bg-[#F5F6FA] p-2 dark:bg-gray-900 md:p-5">
       <nav className="flex h-12 w-full max-w-7xl items-center justify-start px-5">
-        <span className="text-4xl font-bold text-primary dark:text-white">
-          Mathology
-        </span>
+      <img src={Logo} className="mt-4 h-10" alt="Logo" />
       </nav>
       <div className="grid h-[calc(100vh-1px)] w-full max-w-7xl grid-cols-2 gap-5 overflow-hidden p-5">
         <div className="relative col-span-2 flex w-full flex-col items-center justify-center gap-5 rounded-3xl border bg-[#FFFFFF] p-5 shadow-md dark:bg-gray-700/50 md:col-span-1 lg:p-10 xl:p-20">
@@ -48,7 +46,7 @@ const Login = () => {
               Login
             </span>
             <span className="text-md w-full text-center font-medium text-gray-400">
-              Login to your existing account of Mathology
+            Your math journey starts here. enter your email to sign in to <span className="text-primary">Mathology</span>
             </span>
           </div>
           <form
@@ -61,7 +59,7 @@ const Login = () => {
             <Input
               className="border-sm mb-6 border bg-[#F8F7FC] shadow"
               type="email"
-              placeholder="johndoe@email.com"
+              placeholder="Enter your email"
               value={email}
               required={true}
               onChange={(e) => setEmail(e.target.value)}
@@ -72,7 +70,7 @@ const Login = () => {
               size="lg"
               className="w-full"
             >
-              Login
+              LOGIN
             </Button>
           </form>
         </div>
@@ -90,7 +88,7 @@ const Login = () => {
           </div>
         </div>
       </div>
-      <footer className="flex h-8 w-full items-center justify-center pt-4 text-xs">
+      <footer className="flex h-8 w-full items-center justify-center pt-4 text-xs text-gray-500">
         &copy; {new Date().getFullYear()} &nbsp;
         <span className="text-primary">mathology.</span>&nbsp; All Rights
         Reserved

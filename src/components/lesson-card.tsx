@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { EllipsisVertical, Loader2 } from "lucide-react";
+import { EllipsisVertical, Loader2, Trash, Edit } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -57,7 +57,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
         <CardContent className="p-0">
           <div
             className={cn(
-              "relative flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl p-3.5",
+              "relative flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl p-3.5 hover:bg-gray-100 dark:hover:bg-gray-800",
               { "border border-[#FF3D60]": lesson.is_published }
             )}
           >
@@ -78,10 +78,10 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                   <DropdownMenuItem className="border-b">
                     <Link
                       to={`/dashboard/edit-lesson/${lesson.lesson_id}`}
-                      className="flex w-full items-center justify-start"
+                      className="flex w-full items-center justify-start gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      Edit
+                      <Edit size={13} /> Edit
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -91,7 +91,7 @@ const LessonCard = ({ lesson, token }: { lesson: Lesson; token: string }) => {
                     }}
                     className="cursor-pointer border-b"
                   >
-                    <span className="text-red-600">Delete</span>
+                    <span className=" flex w-full items-center justify-start gap-2 text-red-600"> <Trash size={13} /> Delete</span>
                   </DropdownMenuItem>
                   {lesson.is_published && (
                     <DropdownMenuItem>
